@@ -9,12 +9,6 @@ on:
 jobs:
   test-deployment:
     runs-on: ubuntu-latest
-    services:
-      surfpool:
-        image: surfpool/surfpool
-        options: -n devnet
-        ports:
-          - 8899:8899
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -35,18 +29,22 @@ jobs:
       - name: Generate deployer keypair
         run: ./bank init
 
-      - name: Install Solana CLI
-        run: |
-          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
-          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Install Surfpool
+        run: curl -sL https://run.surfpool.run/ | bash
 
-      - name: Airdrop SOL to deployer
+      - name: Start Surfpool
         run: |
-          export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
           DEPLOYER_PUBKEY=$(jq -r .publicKey secrets/deployer.json)
           echo "Deployer public key: $DEPLOYER_PUBKEY"
-          solana config set --url http://localhost:8899
-          solana airdrop 10 "$DEPLOYER_PUBKEY"
+          ~/.surfpool/bin/surfpool start -n devnet --airdrop "$DEPLOYER_PUBKEY" &
+          for i in {1..30}; do
+            if curl -s http://localhost:8899/health > /dev/null 2>&1; then
+              echo "Surfpool is ready"
+              break
+            fi
+            echo "Waiting for Surfpool... ($i/30)"
+            sleep 1
+          done
 
       - name: Run deployment
         run: ./bank launch --cluster local --send
