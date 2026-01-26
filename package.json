@@ -4,17 +4,19 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"surfpool": "surfpool start -n devnet",
-		"launch:local": "./bank launch --cluster local --send"
+		"surfpool": "surfpool start -n devnet --airdrop $(jq -r .publicKey secrets/deployer.json)",
+		"launch:local": "./bank launch --cluster local --send",
+		"lint": "biome check .",
+		"lint:fix": "biome check . --fix",
+		"lint:fix:unsafe": "biome check . --fix --unsafe",
+		"type-check": "tsgo --noEmit"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.12",
 		"@tsconfig/strictest": "2.0.8",
-		"@types/bun": "latest"
-	},
-	"peerDependencies": {
-		"typescript": "5.3.9",
-		"@typescript/native-preview": "latest"
+		"@types/bun": "latest",
+		"@typescript/native-preview": "latest",
+		"typescript": "5.3.9"
 	},
 	"dependencies": {
 		"@commander-js/extra-typings": "14.0.0",
