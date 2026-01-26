@@ -17,18 +17,16 @@ type RaydiumCpmmOptions = CommonBucketParams & {
 export default function raydiumCpmm(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: RaydiumCpmmOptions,
-): BuilderWithDescription[] {
+): BuilderWithDescription {
 	const { raydiumCpmm, timeline, ...common } = options;
 
-	return [
-		{
-			description: 'Add Raydium CPMM bucket',
-			builder: addRaydiumCpmmBucketV2(context, {
-				...common,
-				baseTokenAllocation: supplyShareBps(200), // 2% of the total supply
-				startCondition: timeAbsolute(timeline.start),
-				...raydiumCpmm,
-			}),
-		},
-	];
+	return {
+		description: 'Add Raydium CPMM bucket',
+		builder: addRaydiumCpmmBucketV2(context, {
+			...common,
+			baseTokenAllocation: supplyShareBps(200), // 2% of the total supply
+			startCondition: timeAbsolute(timeline.start),
+			...raydiumCpmm,
+		}),
+	};
 }

@@ -1,7 +1,7 @@
 import {
 	findLaunchPoolBucketV2Pda,
 	findRaydiumCpmmBucketV2Pda,
-	findStreamflowBucketV1Pda,
+	findStreamflowBucketV2Pda,
 	findUnlockedBucketV2Pda,
 } from '@metaplex-foundation/genesis';
 import type { Context, PublicKey } from '@metaplex-foundation/umi';
@@ -46,9 +46,9 @@ export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>,
 
 	// Marketing and collaborations
 	const marketingStreamflowBucketIndex = bucketCounter.get('streamflow');
-	const [marketingStreamflowBucket] = findStreamflowBucketV1Pda(context, {
+	const [marketingStreamflowBucket] = findStreamflowBucketV2Pda(context, {
 		genesisAccount,
-		index: marketingStreamflowBucketIndex,
+		bucketIndex: marketingStreamflowBucketIndex,
 	});
 
 	// Liquidity Management
@@ -60,9 +60,9 @@ export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>,
 
 	// Treasury: 20%
 	const treasuryStreamflowBucketIndex = bucketCounter.get('streamflow');
-	const [treasuryStreamflowBucket] = findStreamflowBucketV1Pda(context, {
+	const [treasuryStreamflowBucket] = findStreamflowBucketV2Pda(context, {
 		genesisAccount,
-		index: treasuryStreamflowBucketIndex,
+		bucketIndex: treasuryStreamflowBucketIndex,
 	});
 
 	return {

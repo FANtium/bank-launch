@@ -19,23 +19,21 @@ type BankrollOptions = CommonBucketParams & {
 export default function bankroll(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: BankrollOptions,
-): BuilderWithDescription[] {
+): BuilderWithDescription {
 	const {
 		unlockedBucket,
 		timeline: { claimStart, claimEnd },
 		...common
 	} = options;
 
-	return [
-		{
-			description: 'Add bankroll unlocked bucket',
-			builder: addUnlockedBucketV2(context, {
-				...common,
-				baseTokenAllocation: supplyShareBps(2500), // 25% of the total supply
-				claimStartCondition: timeAbsolute(claimStart),
-				claimEndCondition: timeAbsolute(claimEnd),
-				...unlockedBucket,
-			}),
-		},
-	];
+	return {
+		description: 'Add bankroll unlocked bucket',
+		builder: addUnlockedBucketV2(context, {
+			...common,
+			baseTokenAllocation: supplyShareBps(2500), // 25% of the total supply
+			claimStartCondition: timeAbsolute(claimStart),
+			claimEndCondition: timeAbsolute(claimEnd),
+			...unlockedBucket,
+		}),
+	};
 }

@@ -20,7 +20,7 @@ type TreasuryOptions = CommonBucketParams & {
 export default function treasury(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: TreasuryOptions,
-): BuilderWithDescription[] {
+): BuilderWithDescription {
 	const {
 		streamflowBucket: { config: streamflowConfig, ...streamflowBucket },
 		timeline: { vestingStart, vestingEnd },
@@ -29,23 +29,21 @@ export default function treasury(
 
 	const treasuryBps = 2000; // 20% of the total supply
 
-	return [
-		{
-			description: 'Add treasury Streamflow bucket',
-			builder: addStreamflowBucketVX(context, {
-				...common,
-				baseTokenAllocation: supplyShareBps(treasuryBps), // 15% of the total supply
-				config: {
-					streamName: Buffer.from('Treasury Streamflow'),
-					cliffAmount: supplyShareBps(treasuryBps * 0.25), // 5% of the total supply (25% cliff)
-					startTime: getUnixTime(vestingStart),
-					endTime: getUnixTime(vestingEnd),
-					...streamflowConfig,
-				},
-				lockStartCondition: timeAbsolute(vestingStart),
-				lockEndCondition: timeAbsolute(vestingEnd),
-				...streamflowBucket,
-			}),
-		},
-	];
+	return {
+		description: 'Add treasury Streamflow bucket',
+		builder: addStreamflowBucketVX(context, {
+			...common,
+			baseTokenAllocation: supplyShareBps(treasuryBps), // 15% of the total supply
+			config: {
+				streamName: Buffer.from('Treasury Streamflow'),
+				cliffAmount: supplyShareBps(treasuryBps * 0.25), // 5% of the total supply (25% cliff)
+				startTime: getUnixTime(vestingStart),
+				endTime: getUnixTime(vestingEnd),
+				...streamflowConfig,
+			},
+			lockStartCondition: timeAbsolute(vestingStart),
+			lockEndCondition: timeAbsolute(vestingEnd),
+			...streamflowBucket,
+		}),
+	};
 }

@@ -11,21 +11,19 @@ type InitializeOptions = Omit<CommonBucketParams, 'baseMint'> & {
 export default function initialize(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: InitializeOptions,
-): BuilderWithDescription[] {
-	return [
-		{
-			description: 'Initialize bank token',
-			builder: initializeV2(context, {
-				...options,
-				quoteMint: WSOL_MINT,
-				fundingMode: 0,
-				totalSupplyBaseToken: BANK_TOTAL_SUPPLY,
+): BuilderWithDescription {
+	return {
+		description: 'Initialize bank token',
+		builder: initializeV2(context, {
+			...options,
+			quoteMint: WSOL_MINT,
+			fundingMode: 0,
+			totalSupplyBaseToken: BANK_TOTAL_SUPPLY,
 
-				name: 'Bank Token',
-				symbol: 'BANK',
-				uri: 'https://fanstrike.fun/bank',
-				decimals: BANK_DECIMALS,
-			}),
-		},
-	];
+			name: 'Bank Token',
+			symbol: 'BANK',
+			uri: 'https://fanstrike.fun/bank',
+			decimals: BANK_DECIMALS,
+		}),
+	};
 }

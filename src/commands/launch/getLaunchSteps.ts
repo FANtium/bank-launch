@@ -139,7 +139,19 @@ export default function getLaunchSteps(
 				vestingEnd: timeline.treasuryVestingEnd,
 			},
 		}),
-		finalize(context, common),
+		finalize(context, {
+			...common,
+			buckets: [
+				bucket.privateSaleUnlockedBucket,
+				bucket.publicSaleUnlockedBucket,
+				bucket.publicSaleLaunchPoolBucket,
+				bucket.raydiumBucket,
+				bucket.bankrollUnlockedBucket,
+				bucket.marketingStreamflowBucket,
+				bucket.liquidityManagementUnlockedBucket,
+				bucket.treasuryStreamflowBucket,
+			],
+		}),
 	].flat();
 
 	return steps;

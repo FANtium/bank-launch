@@ -19,23 +19,21 @@ type LiquidityOptions = CommonBucketParams & {
 export default function liquidity(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: LiquidityOptions,
-): BuilderWithDescription[] {
+): BuilderWithDescription {
 	const {
 		timeline: { claimStart, claimEnd },
 		unlockedBucket,
 		...common
 	} = options;
 
-	return [
-		{
-			description: 'Add liquidity management unlocked bucket',
-			builder: addUnlockedBucketV2(context, {
-				...common,
-				baseTokenAllocation: supplyShareBps(2300), // 23% of the total supply
-				claimStartCondition: timeAbsolute(claimStart),
-				claimEndCondition: timeAbsolute(claimEnd),
-				...unlockedBucket,
-			}),
-		},
-	];
+	return {
+		description: 'Add liquidity management unlocked bucket',
+		builder: addUnlockedBucketV2(context, {
+			...common,
+			baseTokenAllocation: supplyShareBps(2300), // 23% of the total supply
+			claimStartCondition: timeAbsolute(claimStart),
+			claimEndCondition: timeAbsolute(claimEnd),
+			...unlockedBucket,
+		}),
+	};
 }

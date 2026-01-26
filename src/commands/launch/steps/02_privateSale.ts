@@ -19,23 +19,21 @@ type PrivateSaleOptions = CommonBucketParams & {
 export default function privateSale(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: PrivateSaleOptions,
-): BuilderWithDescription[] {
+): BuilderWithDescription {
 	const {
 		timeline: { claimStart, claimEnd },
 		unlockedBucket,
 		...common
 	} = options;
 
-	return [
-		{
-			description: 'Add private sale unlocked bucket',
-			builder: addUnlockedBucketV2(context, {
-				...common,
-				baseTokenAllocation: supplyShareBps(1000), // 10% of the total supply
-				claimStartCondition: timeAbsolute(claimStart),
-				claimEndCondition: timeAbsolute(claimEnd),
-				...unlockedBucket,
-			}),
-		},
-	];
+	return {
+		description: 'Add private sale unlocked bucket',
+		builder: addUnlockedBucketV2(context, {
+			...common,
+			baseTokenAllocation: supplyShareBps(1000), // 10% of the total supply
+			claimStartCondition: timeAbsolute(claimStart),
+			claimEndCondition: timeAbsolute(claimEnd),
+			...unlockedBucket,
+		}),
+	};
 }
