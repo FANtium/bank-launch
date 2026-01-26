@@ -9,7 +9,16 @@ import BucketCounter from '../lib/BucketCounter';
 
 type BucketType = 'unlocked' | 'launchPool' | 'raydiumCpmm' | 'streamflow';
 
-export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>, genesisAccount: PublicKey) {
+type GetBucketsOptions = {
+	noStreamflow?: boolean;
+};
+
+export default function getBuckets(
+	context: Pick<Context, 'eddsa' | 'programs'>,
+	genesisAccount: PublicKey,
+	options: GetBucketsOptions = {},
+) {
+	const { noStreamflow = false } = options;
 	const bucketCounter = new BucketCounter<BucketType>(['unlocked', 'launchPool', 'raydiumCpmm', 'streamflow']);
 
 	// Private Sale
@@ -45,11 +54,16 @@ export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>,
 	});
 
 	// Marketing and collaborations
-	const marketingStreamflowBucketIndex = bucketCounter.get('streamflow');
-	const [marketingStreamflowBucket] = findStreamflowBucketV2Pda(context, {
-		genesisAccount,
-		bucketIndex: marketingStreamflowBucketIndex,
-	});
+	const marketingBucketIndex = noStreamflow ? bucketCounter.get('unlocked') : bucketCounter.get('streamflow');
+	const [marketingBucket] = noStreamflow
+		? findUnlockedBucketV2Pda(context, {
+				genesisAccount,
+				bucketIndex: marketingBucketIndex,
+			})
+		: findStreamflowBucketV2Pda(context, {
+				genesisAccount,
+				bucketIndex: marketingBucketIndex,
+			});
 
 	// Liquidity Management
 	const liquidityManagementUnlockedBucketIndex = bucketCounter.get('unlocked');
@@ -59,11 +73,16 @@ export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>,
 	});
 
 	// Treasury: 20%
-	const treasuryStreamflowBucketIndex = bucketCounter.get('streamflow');
-	const [treasuryStreamflowBucket] = findStreamflowBucketV2Pda(context, {
-		genesisAccount,
-		bucketIndex: treasuryStreamflowBucketIndex,
-	});
+	const treasuryBucketIndex = noStreamflow ? bucketCounter.get('unlocked') : bucketCounter.get('streamflow');
+	const [treasuryBucket] = noStreamflow
+		? findUnlockedBucketV2Pda(context, {
+				genesisAccount,
+				bucketIndex: treasuryBucketIndex,
+			})
+		: findStreamflowBucketV2Pda(context, {
+				genesisAccount,
+				bucketIndex: treasuryBucketIndex,
+			});
 
 	return {
 		privateSaleUnlockedBucketIndex,
@@ -80,13 +99,15 @@ export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>,
 		bankrollUnlockedBucketIndex,
 		bankrollUnlockedBucket,
 
-		marketingStreamflowBucketIndex,
-		marketingStreamflowBucket,
+		marketingBucketIndex,
+		marketingBucket,
 
 		liquidityManagementUnlockedBucketIndex,
 		liquidityManagementUnlockedBucket,
 
-		treasuryStreamflowBucketIndex,
-		treasuryStreamflowBucket,
+		treasuryBucketIndex,
+		treasuryBucket,
+
+		noStreamflow,
 	};
 }

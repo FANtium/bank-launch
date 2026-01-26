@@ -6,6 +6,7 @@
 	"scripts": {
 		"surfpool:start": "surfpool start -n devnet --airdrop $(jq -r .publicKey secrets/deployer.json)",
 		"surfpool:reset": "curl -sX POST -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"surfnet_resetNetwork\",\"params\":[]}' http://localhost:8899",
+		"surfpool:stop": "pkill -9 -f surfpool",
 		"surfpool:airdrop": "solana airdrop 10 $(jq -r .publicKey secrets/deployer.json)",
 		"launch:local": "./bank launch --cluster local --send",
 		"format": "bun run format:prettier && bun run format:biome",

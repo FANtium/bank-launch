@@ -7,8 +7,10 @@ import publicSale from '@/commands/launch/steps/03_publicSale';
 import raydiumCpmm from '@/commands/launch/steps/04_raydiumCpmm';
 import bankroll from '@/commands/launch/steps/05_bankroll';
 import marketing from '@/commands/launch/steps/06_marketing';
+import marketingUnlocked from '@/commands/launch/steps/06_marketingUnlocked';
 import liquidity from '@/commands/launch/steps/07_liquidity';
 import treasury from '@/commands/launch/steps/08_treasury';
+import treasuryUnlocked from '@/commands/launch/steps/08_treasuryUnlocked';
 import finalize from '@/commands/launch/steps/09_finalize';
 import getBuckets from '@/constants/buckets';
 import { walletsMap } from '@/constants/wallets';
@@ -19,6 +21,7 @@ import type Cluster from '@/types/Cluster';
 type GetLaunchStepsOptions = {
 	cluster: Cluster;
 	seed: string;
+	noStreamflow: boolean;
 };
 
 export default function getLaunchSteps(
@@ -26,8 +29,8 @@ export default function getLaunchSteps(
 	options: GetLaunchStepsOptions,
 ) {
 	const logger = globalLogger.getSubLogger({ name: 'getLaunchSteps' });
-	const { cluster, seed } = options;
-	logger.info(`Launching on cluster: ${cluster}`);
+	const { cluster, seed, noStreamflow } = options;
+	logger.info(`Launching on cluster: ${cluster}${noStreamflow ? ' (no streamflow)' : ''}`);
 
 	// Hash the seed string to get exactly 32 bytes (SHA-256 output)
 	const seed32 = createHash('sha256').update(seed).digest();
@@ -48,7 +51,7 @@ export default function getLaunchSteps(
 	};
 
 	// Buckets
-	const bucket = getBuckets(context, genesisAccount);
+	const bucket = getBuckets(context, genesisAccount, { noStreamflow });
 	const timeline = getTimeline(new Date());
 	const wallets = walletsMap[cluster];
 
@@ -109,17 +112,29 @@ export default function getLaunchSteps(
 				claimEnd: timeline.claimEnd,
 			},
 		}),
-		marketing(context, {
-			...common,
-			streamflowBucket: {
-				bucketIndex: bucket.marketingStreamflowBucketIndex,
-				recipient: wallets.marketing,
-			},
-			timeline: {
-				vestingStart: timeline.marketingVestingStart,
-				vestingEnd: timeline.marketingVestingEnd,
-			},
-		}),
+		noStreamflow
+			? marketingUnlocked(context, {
+					...common,
+					unlockedBucket: {
+						bucketIndex: bucket.marketingBucketIndex,
+						recipient: wallets.marketing,
+					},
+					timeline: {
+						claimStart: timeline.claimStart,
+						claimEnd: timeline.claimEnd,
+					},
+				})
+			: marketing(context, {
+					...common,
+					streamflowBucket: {
+						bucketIndex: bucket.marketingBucketIndex,
+						recipient: wallets.marketing,
+					},
+					timeline: {
+						vestingStart: timeline.marketingVestingStart,
+						vestingEnd: timeline.marketingVestingEnd,
+					},
+				}),
 		liquidity(context, {
 			...common,
 			unlockedBucket: {
@@ -131,17 +146,29 @@ export default function getLaunchSteps(
 				claimEnd: timeline.claimEnd,
 			},
 		}),
-		treasury(context, {
-			...common,
-			streamflowBucket: {
-				bucketIndex: bucket.treasuryStreamflowBucketIndex,
-				recipient: wallets.treasury,
-			},
-			timeline: {
-				vestingStart: timeline.treasuryVestingStart,
-				vestingEnd: timeline.treasuryVestingEnd,
-			},
-		}),
+		noStreamflow
+			? treasuryUnlocked(context, {
+					...common,
+					unlockedBucket: {
+						bucketIndex: bucket.treasuryBucketIndex,
+						recipient: wallets.treasury,
+					},
+					timeline: {
+						claimStart: timeline.claimStart,
+						claimEnd: timeline.claimEnd,
+					},
+				})
+			: treasury(context, {
+					...common,
+					streamflowBucket: {
+						bucketIndex: bucket.treasuryBucketIndex,
+						recipient: wallets.treasury,
+					},
+					timeline: {
+						vestingStart: timeline.treasuryVestingStart,
+						vestingEnd: timeline.treasuryVestingEnd,
+					},
+				}),
 		finalize(context, {
 			...common,
 			buckets: [
@@ -150,9 +177,9 @@ export default function getLaunchSteps(
 				bucket.publicSaleLaunchPoolBucket,
 				bucket.raydiumBucket,
 				bucket.bankrollUnlockedBucket,
-				bucket.marketingStreamflowBucket,
+				bucket.marketingBucket,
 				bucket.liquidityManagementUnlockedBucket,
-				bucket.treasuryStreamflowBucket,
+				bucket.treasuryBucket,
 			],
 		}),
 	].flat();

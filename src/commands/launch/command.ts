@@ -12,10 +12,12 @@ interface LaunchOptions {
 	cluster: 'local' | 'devnet' | 'mainnet';
 	send: boolean;
 	seed: string;
+	streamflow: boolean;
 }
 
 async function launchAction(options: LaunchOptions) {
-	const { cluster, send, seed } = options;
+	const { cluster, send, seed, streamflow } = options;
+	const noStreamflow = !streamflow;
 
 	logger.info(`Launching on cluster: ${cluster} (send: ${send})`);
 
@@ -25,7 +27,7 @@ async function launchAction(options: LaunchOptions) {
 	umi.use(keypairIdentity(keypair, true));
 	logger.info(`Using deployer: ${umi.identity.publicKey}`);
 
-	const steps = getLaunchSteps(umi, { cluster, seed });
+	const steps = getLaunchSteps(umi, { cluster, seed, noStreamflow });
 	logger.info(`Total steps to execute: ${steps.length}`);
 
 	for (const [index, step] of steps.entries()) {
@@ -56,5 +58,6 @@ export function registerLaunchCommand(program: Command) {
 		)
 		.option('-s, --send', 'Send the transactions', false)
 		.option('--seed <seed>', 'Seed for mint derivation', 'bank-launch')
+		.option('--no-streamflow', 'Use unlocked buckets instead of streamflow')
 		.action(launchAction);
 }
