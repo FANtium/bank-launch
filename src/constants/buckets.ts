@@ -5,7 +5,7 @@ import {
 	findUnlockedBucketV2Pda,
 } from '@metaplex-foundation/genesis';
 import type { Context, PublicKey } from '@metaplex-foundation/umi';
-import BucketCounter from './BucketCounter';
+import BucketCounter from '../lib/BucketCounter';
 
 type BucketType = 'unlocked' | 'launchPool' | 'raydiumCpmm' | 'streamflow';
 
@@ -45,11 +45,6 @@ export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>,
 	});
 
 	// Marketing and collaborations
-	const marketingUnlockedBucketIndex = bucketCounter.get('unlocked');
-	const [marketingUnlockedBucket] = findUnlockedBucketV2Pda(context, {
-		genesisAccount,
-		bucketIndex: marketingUnlockedBucketIndex,
-	});
 	const marketingStreamflowBucketIndex = bucketCounter.get('streamflow');
 	const [marketingStreamflowBucket] = findStreamflowBucketV1Pda(context, {
 		genesisAccount,
@@ -64,11 +59,6 @@ export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>,
 	});
 
 	// Treasury: 20%
-	const treasuryUnlockedBucketIndex = bucketCounter.get('unlocked');
-	const [treasuryUnlockedBucket] = findUnlockedBucketV2Pda(context, {
-		genesisAccount,
-		bucketIndex: treasuryUnlockedBucketIndex,
-	});
 	const treasuryStreamflowBucketIndex = bucketCounter.get('streamflow');
 	const [treasuryStreamflowBucket] = findStreamflowBucketV1Pda(context, {
 		genesisAccount,
@@ -90,16 +80,12 @@ export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>,
 		bankrollUnlockedBucketIndex,
 		bankrollUnlockedBucket,
 
-		marketingUnlockedBucketIndex,
-		marketingUnlockedBucket,
 		marketingStreamflowBucketIndex,
 		marketingStreamflowBucket,
 
 		liquidityManagementUnlockedBucketIndex,
 		liquidityManagementUnlockedBucket,
 
-		treasuryUnlockedBucketIndex,
-		treasuryUnlockedBucket,
 		treasuryStreamflowBucketIndex,
 		treasuryStreamflowBucket,
 	};

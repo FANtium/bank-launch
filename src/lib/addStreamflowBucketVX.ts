@@ -10,7 +10,6 @@ const period = day; // 1 day
 // Default config for Streamflow buckets
 // See https://github.com/streamflow-finance/js-sdk/blob/master/packages/stream/README.md for details
 const defaultConfig = {
-	cliffAmount: 0, // no cliff, vesting starts immediately
 	period,
 	cancelableByRecipient: false,
 	cancelableBySender: false,

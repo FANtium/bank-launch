@@ -10,8 +10,8 @@ import marketing from '@/commands/launch/steps/06_marketing';
 import liquidity from '@/commands/launch/steps/07_liquidity';
 import treasury from '@/commands/launch/steps/08_treasury';
 import finalize from '@/commands/launch/steps/09_finalize';
+import getBuckets from '@/constants/buckets';
 import { walletsMap } from '@/constants/wallets';
-import getBuckets from '@/lib/buckets';
 import getTimeline from '@/lib/getTimeline';
 import globalLogger from '@/logging/globalLogger';
 import type Cluster from '@/types/Cluster';
@@ -108,17 +108,11 @@ export default function getLaunchSteps(
 		}),
 		marketing(context, {
 			...common,
-			unlockedBucket: {
-				bucketIndex: bucket.marketingUnlockedBucketIndex,
-				recipient: wallets.marketing,
-			},
 			streamflowBucket: {
 				bucketIndex: bucket.marketingStreamflowBucketIndex,
 				recipient: wallets.marketing,
 			},
 			timeline: {
-				claimStart: timeline.claimStart,
-				claimEnd: timeline.claimEnd,
 				vestingStart: timeline.marketingVestingStart,
 				vestingEnd: timeline.marketingVestingEnd,
 			},
@@ -136,17 +130,11 @@ export default function getLaunchSteps(
 		}),
 		treasury(context, {
 			...common,
-			unlockedBucket: {
-				bucketIndex: bucket.treasuryUnlockedBucketIndex,
-				recipient: wallets.treasury,
-			},
 			streamflowBucket: {
 				bucketIndex: bucket.treasuryStreamflowBucketIndex,
 				recipient: wallets.treasury,
 			},
 			timeline: {
-				claimStart: timeline.claimStart,
-				claimEnd: timeline.claimEnd,
 				vestingStart: timeline.treasuryVestingStart,
 				vestingEnd: timeline.treasuryVestingEnd,
 			},
