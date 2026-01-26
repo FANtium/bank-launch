@@ -1,0 +1,50 @@
+name: Test Deployment
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: 'package.json'
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Generate deployer keypair
+        run: ./bank init
+
+      - name: Install Surfpool
+        run: curl -sL https://run.surfpool.run/ | bash
+
+      - name: Start Surfpool
+        run: |
+          DEPLOYER_PUBKEY=$(jq -r .publicKey secrets/deployer.json)
+          echo "Deployer public key: $DEPLOYER_PUBKEY"
+          ~/.surfpool/bin/surfpool start -n devnet --airdrop "$DEPLOYER_PUBKEY" &
+          for i in {1..30}; do
+            if curl -s http://localhost:8899/health > /dev/null 2>&1; then
+              echo "Surfpool is ready"
+              break
+            fi
+            echo "Waiting for Surfpool... ($i/30)"
+            sleep 1
+          done
+
+      - name: Run deployment
+        run: ./bank launch --cluster local --send
