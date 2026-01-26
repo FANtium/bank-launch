@@ -52,6 +52,9 @@ export default function getLaunchSteps(
 	const timeline = getTimeline(new Date());
 	const wallets = walletsMap[cluster];
 
+	// NOTE: StreamflowBucketV2 is not currently supported by the Genesis program's
+	// finalizeV2 instruction on devnet. This causes finalize to fail with "Invalid Bucket passed in".
+	// See: https://github.com/metaplex-foundation/genesis - report this issue to Metaplex.
 	const steps = [
 		initialize(context, { ...common, baseMint }),
 		privateSale(context, {

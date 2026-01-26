@@ -43,8 +43,6 @@ export default function addStreamflowBucketVX(
 	const periods = totalVestingTime / BigInt(period);
 	const amountPerPeriod = BigInt(params.baseTokenAllocation) / periods;
 
-	// TODO: use the Streamflow bucket creation when available
-	// return addStreamflowBucketV1(context, finalParams);
 	return addStreamflowBucketV2(context, {
 		...params,
 		config: {
