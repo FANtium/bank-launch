@@ -1,13 +1,10 @@
 #!/usr/bin/env bun
 
 import { Command } from '@commander-js/extra-typings';
-import { registerInitCommand } from './src/commands/init';
-import { registerLaunchCommand } from './src/commands/launch';
+import { registerInitCommand } from './src/commands/init/command';
+import { registerLaunchCommand } from './src/commands/launch/command';
 
-const program = new Command()
-	.name('bank')
-	.description('CLI for BANK token launch operations')
-	.version('0.0.0');
+const program = new Command().name('bank').description('CLI for BANK token launch operations').version('0.0.0');
 
 registerInitCommand(program);
 registerLaunchCommand(program);
