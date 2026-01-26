@@ -44,14 +44,14 @@ Options:
 
 ## Scripts
 
-| Script | Command | Description |
-| --- | --- | --- |
-| `surfpool` | `bun run surfpool` | Start local Surfpool validator with devnet and airdrop to deployer |
-| `launch:local` | `bun run launch:local` | Launch token on local cluster |
-| `lint` | `bun run lint` | Run Biome linter |
-| `lint:fix` | `bun run lint:fix` | Run Biome linter with auto-fix |
-| `lint:fix:unsafe` | `bun run lint:fix:unsafe` | Run Biome linter with unsafe auto-fix |
-| `type-check` | `bun run type-check` | Run TypeScript type checking |
+| Script            | Command                   | Description                                                        |
+| ----------------- | ------------------------- | ------------------------------------------------------------------ |
+| `surfpool`        | `bun run surfpool`        | Start local Surfpool validator with devnet and airdrop to deployer |
+| `launch:local`    | `bun run launch:local`    | Launch token on local cluster                                      |
+| `lint`            | `bun run lint`            | Run Biome linter                                                   |
+| `lint:fix`        | `bun run lint:fix`        | Run Biome linter with auto-fix                                     |
+| `lint:fix:unsafe` | `bun run lint:fix:unsafe` | Run Biome linter with unsafe auto-fix                              |
+| `type-check`      | `bun run type-check`      | Run TypeScript type checking                                       |
 
 ## Local Development
 
