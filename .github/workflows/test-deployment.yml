@@ -8,6 +8,7 @@ on:
 
 jobs:
   test-deployment:
+    name: Test Deployment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
