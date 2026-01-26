@@ -12,7 +12,8 @@
 		"lint": "biome check .",
 		"lint:fix": "biome check . --fix",
 		"lint:fix:unsafe": "biome check . --fix --unsafe",
-		"type-check": "tsgo --noEmit"
+		"type-check": "tsgo --noEmit",
+		"test": "bun test"
 	},
 	"dependencies": {
 		"@commander-js/extra-typings": "14.0.0",
@@ -30,6 +31,7 @@
 		"@tsconfig/strictest": "2.0.8",
 		"@types/bun": "latest",
 		"@typescript/native-preview": "latest",
+		"lefthook": "2.0.15",
 		"prettier": "3.8.1",
 		"typescript": "5.9.3"
 	},
