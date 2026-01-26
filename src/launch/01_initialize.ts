@@ -1,10 +1,12 @@
 import { initializeV2 } from '@metaplex-foundation/genesis';
-import type { Context } from '@metaplex-foundation/umi';
+import type { Context, Signer } from '@metaplex-foundation/umi';
 import { BANK_DECIMALS, BANK_TOTAL_SUPPLY, WSOL_MINT } from '@/constants/token';
 import type { BuilderWithDescription } from '@/types/BuilderWithDescription';
 import type { CommonBucketParams } from '@/types/CommonBucketParams';
 
-type InitializeOptions = CommonBucketParams;
+type InitializeOptions = Omit<CommonBucketParams, 'baseMint'> & {
+	baseMint: Signer;
+};
 
 export default function initialize(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,

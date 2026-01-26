@@ -5,7 +5,7 @@
 	"private": true,
 	"scripts": {
 		"surfpool": "surfpool start -n devnet",
-		"launch:local": "bun run ./scripts/launch2.ts --cluster local --send"
+		"launch:local": "./bank launch --cluster local --send"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.12",
