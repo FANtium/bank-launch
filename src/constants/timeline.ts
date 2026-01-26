@@ -1,0 +1,4 @@
+export const SALE_DURATION_HOURS = 48;
+export const CLAIM_DURATION_HOURS = 7 * 24;
+export const TREASURY_VESTING_MONTHS = 24;
+export const MARKETING_VESTING_MONTHS = 12;

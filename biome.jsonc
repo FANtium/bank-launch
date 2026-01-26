@@ -1,0 +1,112 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**",
+			"!**/.next",
+			"!**/.strapi",
+			"!**/.strapi-updater.json",
+			"!**/.turbo",
+			"!**/.vscode/database-client-config.json",
+			"!**/next-env.d.ts",
+			"!**/node_modules",
+			"!**/public",
+			"!**/dist"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"formatWithErrors": true,
+		"indentStyle": "tab",
+		"lineEnding": "lf",
+		"lineWidth": 120,
+		"attributePosition": "auto"
+	},
+	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"linter": {
+		"enabled": true,
+		"includes": [
+			"**",
+			"!**/.next/types/**",
+			"!**/apps/front/src/graphql/generated/graphql-request.ts",
+			"!**/apps/strapi/types/generated/**",
+			"!**/apps/scripts/src/graphql/generated/graphql-request.ts",
+			"!**/apps/scripts/src/graphql/generated/types.ts"
+		],
+		"rules": {
+			"recommended": true,
+			"complexity": {
+				"noImportantStyles": "off"
+			},
+			"style": {
+				"noInferrableTypes": "error",
+				"noRestrictedImports": {
+					"level": "error",
+					"options": {
+						"paths": {
+							"date-fns": "Use deep imports like 'date-fns/format' instead",
+							"lodash-es": "Use deep imports like 'lodash-es/debounce' instead",
+							"next/legacy/image": "Use next/image instead"
+						}
+					}
+				}
+			},
+			"suspicious": {
+				"noUnknownAtRules": "off",
+				"noConsole": "error"
+			}
+		}
+	},
+
+	// Languages-specific configuration
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
+	"graphql": {
+		"formatter": {
+			"enabled": true
+		},
+		"linter": {
+			"enabled": true
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"enabled": true,
+			"quoteStyle": "single",
+			"jsxQuoteStyle": "double",
+			"quoteProperties": "asNeeded",
+			"trailingCommas": "all",
+			"semicolons": "always",
+			"arrowParentheses": "always",
+			"bracketSameLine": false,
+			"attributePosition": "auto"
+		},
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		},
+		"linter": {
+			"enabled": true
+		}
+	},
+	"json": {
+		"parser": {
+			"allowComments": true,
+			"allowTrailingCommas": true
+		},
+		"formatter": {
+			"enabled": true
+		},
+		"linter": {
+			"enabled": true
+		}
+	}
+}
