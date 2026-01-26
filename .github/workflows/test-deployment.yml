@@ -29,11 +29,18 @@ jobs:
       - name: Generate deployer keypair
         run: ./bank init
 
-      - name: Install and start Surfpool
+      - name: Install Solana CLI
+        run: |
+          curl -sSfL https://release.anza.xyz/stable/install | bash
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Install Surfpool
         run: |
           curl -sL https://run.surfpool.run/ | bash
           echo "$HOME/.surfpool/bin" >> $GITHUB_PATH
-          export PATH="$HOME/.surfpool/bin:$PATH"
+
+      - name: Start Surfpool
+        run: |
           surfpool start -n devnet &
           for i in {1..30}; do
             if curl -s http://localhost:8899/health > /dev/null 2>&1; then
@@ -43,11 +50,6 @@ jobs:
             echo "Waiting for Surfpool... ($i/30)"
             sleep 1
           done
-
-      - name: Install Solana CLI
-        run: |
-          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
-          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
       - name: Airdrop SOL to deployer
         run: |
