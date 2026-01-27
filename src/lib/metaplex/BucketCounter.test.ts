@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import BucketCounter from './BucketCounter';
+import BucketCounter from '@/lib/metaplex/BucketCounter';
 
 describe('BucketCounter', () => {
 	test('returns 0 on first get for a bucket', () => {
@@ -66,5 +66,23 @@ describe('BucketCounter', () => {
 		const counter = new BucketCounter(choices);
 
 		expect(counter.choices).toBe(choices);
+	});
+
+	test('addAlias adds alias after construction', () => {
+		const counter = new BucketCounter(['alpha', 'beta'] as const);
+
+		counter.addAlias('alpha', 'beta');
+
+		expect(counter.get('beta')).toBe(0);
+		expect(counter.get('alpha')).toBe(1); // alias now points to beta
+		expect(counter.get('beta')).toBe(2);
+	});
+
+	test('addAlias throws for unknown canonical name', () => {
+		const counter = new BucketCounter(['alpha'] as const);
+
+		expect(() => counter.addAlias('alpha', 'unknown' as 'alpha')).toThrow(
+			'Cannot add alias for unknown bucket name: unknown',
+		);
 	});
 });

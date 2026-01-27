@@ -2,9 +2,9 @@ import { addLaunchPoolBucketV2, addUnlockedBucketV2, behavior } from '@metaplex-
 import type { Context, PublicKey } from '@metaplex-foundation/umi';
 import { addHours } from 'date-fns/addHours';
 import { getUnixTime } from 'date-fns/getUnixTime';
-import type { AddLaunchPoolBucketV2Params } from '@/types/AddLaunchPoolBucketV2Params';
-import type { AddUnlockedBucketV2Params } from '@/types/AddUnlockedBucketV2Params';
-import type { BuilderWithDescription } from '@/types/BuilderWithDescription';
+import type { AddLaunchPoolBucketV2Params } from '@/lib/metaplex/types/AddLaunchPoolBucketV2Params';
+import type { AddUnlockedBucketV2Params } from '@/lib/metaplex/types/AddUnlockedBucketV2Params';
+import type { StepResult } from '@/lib/pipeline/types';
 import type { CommonBucketParams } from '@/types/CommonBucketParams';
 import type { SetOptional } from '@/types/SetOptional';
 import supplyShareBps from '@/utils/supplyShareBps';
@@ -17,7 +17,7 @@ type PublicSaleOptions = CommonBucketParams & {
 
 	buckets: {
 		publicSaleUnlockedBucket: PublicKey;
-		raydiumBucket: PublicKey;
+		raydiumCpmmBucket: PublicKey;
 	};
 
 	timeline: {
@@ -31,7 +31,7 @@ type PublicSaleOptions = CommonBucketParams & {
 export default function publicSale(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: PublicSaleOptions,
-): BuilderWithDescription[] {
+): StepResult {
 	const {
 		launchpoolBucket,
 		unlockedBucket,
@@ -97,7 +97,7 @@ export default function publicSale(
 					// 20% to Raydium CPMM bucket
 					behavior('SendQuoteTokenPercentage', {
 						padding: Array(4).fill(0),
-						destinationBucket: buckets.raydiumBucket,
+						destinationBucket: buckets.raydiumCpmmBucket,
 						percentageBps: 2000, // 20%
 						processed: false,
 					}),

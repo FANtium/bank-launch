@@ -5,7 +5,7 @@ import {
 	findUnlockedBucketV2Pda,
 } from '@metaplex-foundation/genesis';
 import type { Context, PublicKey } from '@metaplex-foundation/umi';
-import BucketCounter from '../lib/BucketCounter';
+import BucketCounter from '../lib/metaplex/BucketCounter';
 
 type BucketType = 'unlocked' | 'launchPool' | 'raydiumCpmm' | 'streamflow';
 
@@ -20,6 +20,11 @@ export default function getBuckets(
 ) {
 	const { noStreamflow = false } = options;
 	const bucketCounter = new BucketCounter<BucketType>(['unlocked', 'launchPool', 'raydiumCpmm', 'streamflow']);
+
+	if (noStreamflow) {
+		// Alias 'streamflow' to 'unlocked' when noStreamflow is enabled
+		bucketCounter.addAlias('streamflow', 'unlocked');
+	}
 
 	// Private Sale
 	const privateSaleUnlockedBucketIndex = bucketCounter.get('unlocked');
@@ -44,7 +49,10 @@ export default function getBuckets(
 
 	// Raydium CPMM bucket for liquidity mining and initial liquidity provision
 	const raydiumCpmmBucketIndex = bucketCounter.get('raydiumCpmm');
-	const [raydiumBucket] = findRaydiumCpmmBucketV2Pda(context, { genesisAccount, bucketIndex: raydiumCpmmBucketIndex });
+	const [raydiumCpmmBucket] = findRaydiumCpmmBucketV2Pda(context, {
+		genesisAccount,
+		bucketIndex: raydiumCpmmBucketIndex,
+	});
 
 	// Bankroll
 	const bankrollUnlockedBucketIndex = bucketCounter.get('unlocked');
@@ -54,7 +62,7 @@ export default function getBuckets(
 	});
 
 	// Marketing and collaborations
-	const marketingBucketIndex = noStreamflow ? bucketCounter.get('unlocked') : bucketCounter.get('streamflow');
+	const marketingBucketIndex = bucketCounter.get('streamflow');
 	const [marketingBucket] = noStreamflow
 		? findUnlockedBucketV2Pda(context, {
 				genesisAccount,
@@ -73,7 +81,7 @@ export default function getBuckets(
 	});
 
 	// Treasury: 20%
-	const treasuryBucketIndex = noStreamflow ? bucketCounter.get('unlocked') : bucketCounter.get('streamflow');
+	const treasuryBucketIndex = bucketCounter.get('streamflow');
 	const [treasuryBucket] = noStreamflow
 		? findUnlockedBucketV2Pda(context, {
 				genesisAccount,
@@ -94,7 +102,7 @@ export default function getBuckets(
 		publicSaleUnlockedBucket,
 
 		raydiumCpmmBucketIndex,
-		raydiumBucket,
+		raydiumCpmmBucket,
 
 		bankrollUnlockedBucketIndex,
 		bankrollUnlockedBucket,

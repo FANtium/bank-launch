@@ -1,7 +1,7 @@
 import { finalizeV2 } from '@metaplex-foundation/genesis';
 import type { Context, PublicKey } from '@metaplex-foundation/umi';
-import globalLogger from '@/logging/globalLogger';
-import type { BuilderWithDescription } from '@/types/BuilderWithDescription';
+import globalLogger from '@/lib/logging/globalLogger';
+import type { StepResult } from '@/lib/pipeline/types';
 import getPaddedNum from '@/utils/getPaddedNum';
 
 type FinalizeOptions = {
@@ -13,7 +13,7 @@ type FinalizeOptions = {
 export default function finalize(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs' | 'identity'>,
 	options: FinalizeOptions,
-): BuilderWithDescription {
+): StepResult {
 	const logger = globalLogger.getSubLogger({ name: 'finalize' });
 	const { genesisAccount, baseMint, buckets } = options;
 

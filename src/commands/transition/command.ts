@@ -1,15 +1,19 @@
 import { Command, Option } from '@commander-js/extra-typings';
+import { findGenesisAccountV2Pda } from '@metaplex-foundation/genesis';
 import { keypairIdentity } from '@metaplex-foundation/umi';
-import getLaunchPipeline from '@/commands/launch/getLaunchPipeline';
+import transitionPublicSale from '@/commands/transition/steps/01_transitionPublicSale';
+import getBuckets from '@/constants/buckets';
 import globalLogger from '@/lib/logging/globalLogger';
+import createSignerFromSeed from '@/lib/metaplex/createSignerFromSeed';
 import createUmi from '@/lib/metaplex/createUmi';
+import buildPipeline from '@/lib/pipeline/buildPipeline';
 import executePipeline from '@/lib/pipeline/executePipeline';
 import PipelineError from '@/lib/pipeline/PipelineError';
 import printPipeline from '@/lib/pipeline/printPipeline';
 import getKeypair from '@/utils/getKeypair';
 
-const launchCommand = new Command('launch')
-	.description('Launch BANK token on Solana')
+const transitionCommand = new Command('transition')
+	.description('Transition buckets after public sale')
 	.addOption(
 		new Option('-c, --cluster <cluster>', 'Cluster to connect to')
 			.choices(['local', 'devnet', 'mainnet'] as const)
@@ -20,12 +24,12 @@ const launchCommand = new Command('launch')
 	.option('--no-streamflow', 'Use unlocked buckets instead of streamflow')
 	.option('--start-step <number>', 'Step to start from (0-indexed)', '0')
 	.action(async (options) => {
-		const logger = globalLogger.getSubLogger({ name: 'launch' });
+		const logger = globalLogger.getSubLogger({ name: 'transition' });
 		const { cluster, send, seed, streamflow, startStep: startStepStr } = options;
 		const noStreamflow = !streamflow;
 		const startStep = Number.parseInt(startStepStr, 10);
 
-		logger.info(`Launching on cluster: ${cluster} (send: ${send})`);
+		logger.info(`Transitioning buckets on cluster: ${cluster}`);
 
 		// Umi setup
 		const umi = createUmi(cluster);
@@ -33,22 +37,53 @@ const launchCommand = new Command('launch')
 		umi.use(keypairIdentity(keypair, true));
 		logger.info(`Using deployer: ${umi.identity.publicKey}`);
 
-		const pipeline = getLaunchPipeline(umi, { cluster, seed, noStreamflow });
+		// Hash the seed string to get exactly 32 bytes (SHA-256 output)
+		const baseMint = createSignerFromSeed(umi, seed);
+
+		// Genesis account
+		const [genesisAccount] = findGenesisAccountV2Pda(umi, {
+			baseMint: baseMint.publicKey,
+			genesisIndex: 0,
+		});
+
+		const common = {
+			baseMint: baseMint.publicKey,
+			genesisAccount,
+			backendSigner: {
+				signer: umi.identity.publicKey,
+			},
+		};
+
+		const bucket = getBuckets(umi, genesisAccount, { noStreamflow });
+
+		const pipeline = buildPipeline({
+			name: 'transition',
+			steps: [
+				transitionPublicSale(umi, {
+					...common,
+					buckets: {
+						publicSaleLaunchPoolBucket: bucket.publicSaleLaunchPoolBucket,
+						publicSaleUnlockedBucket: bucket.publicSaleUnlockedBucket,
+						raydiumCpmmBucket: bucket.raydiumCpmmBucket,
+					},
+				}),
+			],
+		});
 		pipeline.startStep = startStep;
 		printPipeline(pipeline);
 
 		if (send) {
 			try {
 				await executePipeline(umi, pipeline);
-				logger.info('Launch completed successfully.');
+				logger.info('Transition completed successfully.');
 			} catch (error) {
 				if (error instanceof PipelineError) {
 					logger.info(`To resume from the failed step, run:`);
-					logger.info(`  bun run bank launch --start-step ${error.stepIndex} -s`);
+					logger.info(`  bun run bank transition --start-step ${error.stepIndex} -s`);
 				}
 				process.exit(1);
 			}
 		}
 	});
 
-export default launchCommand;
+export default transitionCommand;

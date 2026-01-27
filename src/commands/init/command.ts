@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { Command } from '@commander-js/extra-typings';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { defaultRpcURLs } from '@/constants/rpc';
-import globalLogger from '@/logging/globalLogger';
+import globalLogger from '@/lib/logging/globalLogger';
 
 const initCommand = new Command('init')
 	.description('Initialize keypairs for deployment')

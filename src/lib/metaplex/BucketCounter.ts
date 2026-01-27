@@ -33,6 +33,14 @@ export default class BucketCounter<T extends string> {
 		private readonly aliases = new Map<T, T>(),
 	) {}
 
+	addAlias(alias: T, canonicalName: T) {
+		if (!this.choices.includes(canonicalName)) {
+			throw new Error(`Cannot add alias for unknown bucket name: ${canonicalName}`);
+		}
+
+		this.aliases.set(alias, canonicalName);
+	}
+
 	/**
 	 * Returns the current counter value for the given bucket, then increments it.
 	 *

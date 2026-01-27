@@ -6,7 +6,7 @@ import {
 	findStreamflowBucketV2Pda,
 } from '@metaplex-foundation/genesis';
 import { createSignerFromKeypair, keypairIdentity } from '@metaplex-foundation/umi';
-import createUmi from '../src/lib/createUmi';
+import createUmi from '../src/lib/metaplex/createUmi';
 import getKeypair from '../src/utils/getKeypair';
 
 const SEED = 'bank-launch';

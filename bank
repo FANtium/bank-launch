@@ -2,6 +2,7 @@
 import { Command } from '@commander-js/extra-typings';
 import initCommand from './src/commands/init/command';
 import launchCommand from './src/commands/launch/command';
+import transitionCommand from './src/commands/transition/command';
 
 const program = new Command()
 	.name('bank')
@@ -9,6 +10,7 @@ const program = new Command()
 	.version('0.0.0')
 	.addCommand(initCommand)
 	.addCommand(launchCommand)
+	.addCommand(transitionCommand)
 	.parse();
 
 export default program;

@@ -1,7 +1,7 @@
 import { addRaydiumCpmmBucketV2 } from '@metaplex-foundation/genesis';
 import type { Context } from '@metaplex-foundation/umi';
-import type { AddRaydiumCpmmBucketV2Params } from '@/types/AddRaydiumCpmmBucketV2Params';
-import type { BuilderWithDescription } from '@/types/BuilderWithDescription';
+import type { AddRaydiumCpmmBucketV2Params } from '@/lib/metaplex/types/AddRaydiumCpmmBucketV2Params';
+import type { StepResult } from '@/lib/pipeline/types';
 import type { CommonBucketParams } from '@/types/CommonBucketParams';
 import type { SetOptional } from '@/types/SetOptional';
 import supplyShareBps from '@/utils/supplyShareBps';
@@ -17,7 +17,7 @@ type RaydiumCpmmOptions = CommonBucketParams & {
 export default function raydiumCpmm(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: RaydiumCpmmOptions,
-): BuilderWithDescription {
+): StepResult {
 	const { raydiumCpmm, timeline, ...common } = options;
 
 	return {

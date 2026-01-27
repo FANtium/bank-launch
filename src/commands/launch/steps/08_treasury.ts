@@ -1,10 +1,10 @@
 import { addUnlockedBucketV2 } from '@metaplex-foundation/genesis';
 import type { Context, PublicKey } from '@metaplex-foundation/umi';
 import { getUnixTime } from 'date-fns/getUnixTime';
-import addStreamflowBucketVX from '@/lib/addStreamflowBucketVX';
-import type { AddStreamflowBucketV2Params } from '@/types/AddStreamflowBucketV2Params';
-import type { AddUnlockedBucketV2Params } from '@/types/AddUnlockedBucketV2Params';
-import type { BuilderWithDescription } from '@/types/BuilderWithDescription';
+import addStreamflowBucketVX from '@/lib/metaplex/addStreamflowBucketVX';
+import type { AddStreamflowBucketV2Params } from '@/lib/metaplex/types/AddStreamflowBucketV2Params';
+import type { AddUnlockedBucketV2Params } from '@/lib/metaplex/types/AddUnlockedBucketV2Params';
+import type { StepResult } from '@/lib/pipeline/types';
 import type { CommonBucketParams } from '@/types/CommonBucketParams';
 import type { SetOptional } from '@/types/SetOptional';
 import supplyShareBps from '@/utils/supplyShareBps';
@@ -39,7 +39,7 @@ const TREASURY_BPS = 2000; // 20% of the total supply
 export default function treasury(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: TreasuryOptions,
-): BuilderWithDescription {
+): StepResult {
 	if (options.mode === 'unlocked') {
 		const {
 			bucketIndex,

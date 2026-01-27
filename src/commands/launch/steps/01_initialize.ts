@@ -1,7 +1,7 @@
 import { initializeV2 } from '@metaplex-foundation/genesis';
 import type { Context, Signer } from '@metaplex-foundation/umi';
 import { BANK_DECIMALS, BANK_TOTAL_SUPPLY, WSOL_MINT } from '@/constants/token';
-import type { BuilderWithDescription } from '@/types/BuilderWithDescription';
+import type { StepResult } from '@/lib/pipeline/types';
 import type { CommonBucketParams } from '@/types/CommonBucketParams';
 
 type InitializeOptions = Omit<CommonBucketParams, 'baseMint'> & {
@@ -11,7 +11,7 @@ type InitializeOptions = Omit<CommonBucketParams, 'baseMint'> & {
 export default function initialize(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	options: InitializeOptions,
-): BuilderWithDescription {
+): StepResult {
 	return {
 		description: 'Initialize bank token',
 		builder: initializeV2(context, {
