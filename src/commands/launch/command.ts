@@ -1,8 +1,22 @@
 import { Command, Option } from '@commander-js/extra-typings';
+import { findGenesisAccountV2Pda } from '@metaplex-foundation/genesis';
 import { keypairIdentity } from '@metaplex-foundation/umi';
-import getLaunchPipeline from '@/commands/launch/getLaunchPipeline';
+import initialize from '@/commands/launch/steps/01_initialize';
+import privateSale from '@/commands/launch/steps/02_privateSale';
+import publicSale from '@/commands/launch/steps/03_publicSale';
+import raydiumCpmm from '@/commands/launch/steps/04_raydiumCpmm';
+import bankroll from '@/commands/launch/steps/05_bankroll';
+import marketing from '@/commands/launch/steps/06_marketing';
+import liquidity from '@/commands/launch/steps/07_liquidity';
+import treasury from '@/commands/launch/steps/08_treasury';
+import finalize from '@/commands/launch/steps/09_finalize';
+import getBuckets from '@/constants/buckets';
+import { walletsMap } from '@/constants/wallets';
+import getTimeline from '@/lib/getTimeline';
 import globalLogger from '@/lib/logging/globalLogger';
+import createSignerFromSeed from '@/lib/metaplex/createSignerFromSeed';
 import createUmi from '@/lib/metaplex/createUmi';
+import buildPipeline from '@/lib/pipeline/buildPipeline';
 import executePipeline from '@/lib/pipeline/executePipeline';
 import PipelineError from '@/lib/pipeline/PipelineError';
 import printPipeline from '@/lib/pipeline/printPipeline';
@@ -33,7 +47,155 @@ const launchCommand = new Command('launch')
 		umi.use(keypairIdentity(keypair, true));
 		logger.info(`Using deployer: ${umi.identity.publicKey}`);
 
-		const pipeline = getLaunchPipeline(umi, { cluster, seed, noStreamflow });
+		// Hash the seed string to get exactly 32 bytes (SHA-256 output)
+		const baseMint = createSignerFromSeed(umi, seed);
+
+		// Genesis account
+		const [genesisAccount] = findGenesisAccountV2Pda(umi, {
+			baseMint: baseMint.publicKey,
+			genesisIndex: 0,
+		});
+
+		const common = {
+			baseMint: baseMint.publicKey,
+			genesisAccount,
+			backendSigner: {
+				signer: umi.identity.publicKey,
+			},
+		};
+
+		// Buckets
+		const bucket = getBuckets(umi, genesisAccount, { noStreamflow });
+		const timeline = getTimeline(new Date());
+		const wallets = walletsMap[cluster];
+
+		// NOTE: StreamflowBucketV2 is not currently supported by the Genesis program's
+		// finalizeV2 instruction on devnet. This causes finalize to fail with "Invalid Bucket passed in".
+		// See: https://github.com/metaplex-foundation/genesis - report this issue to Metaplex.
+		const pipeline = buildPipeline({
+			name: 'launch',
+			steps: [
+				initialize(umi, { ...common, baseMint }),
+				privateSale(umi, {
+					...common,
+					unlockedBucket: {
+						bucketIndex: bucket.privateSaleUnlockedBucketIndex,
+						recipient: wallets.treasury,
+					},
+					timeline: {
+						claimStart: timeline.claimStart,
+						claimEnd: timeline.claimEnd,
+					},
+				}),
+				publicSale(umi, {
+					...common,
+					unlockedBucket: {
+						bucketIndex: bucket.publicSaleUnlockedBucketIndex,
+						recipient: wallets.treasury,
+					},
+					launchpoolBucket: {
+						bucketIndex: bucket.publicSaleLaunchPoolBucketIndex,
+						penaltyWallet: wallets.treasury,
+					},
+					timeline: {
+						claimStart: timeline.claimStart,
+						claimEnd: timeline.claimEnd,
+						publicSaleStart: timeline.publicSaleStart,
+						publicSaleEnd: timeline.publicSaleEnd,
+					},
+					buckets: {
+						publicSaleUnlockedBucket: bucket.publicSaleUnlockedBucket,
+						raydiumCpmmBucket: bucket.raydiumCpmmBucket,
+					},
+				}),
+				raydiumCpmm(umi, {
+					...common,
+					raydiumCpmm: {
+						bucketIndex: bucket.raydiumCpmmBucketIndex,
+					},
+					timeline: {
+						start: timeline.claimStart,
+					},
+				}),
+				bankroll(umi, {
+					...common,
+					unlockedBucket: {
+						bucketIndex: bucket.bankrollUnlockedBucketIndex,
+						recipient: wallets.bankroll,
+					},
+					timeline: {
+						claimStart: timeline.claimStart,
+						claimEnd: timeline.claimEnd,
+					},
+				}),
+				noStreamflow
+					? marketing(umi, {
+							...common,
+							mode: 'unlocked',
+							bucketIndex: bucket.marketingBucketIndex,
+							recipient: wallets.marketing,
+							timeline: {
+								claimStart: timeline.claimStart,
+								claimEnd: timeline.claimEnd,
+							},
+						})
+					: marketing(umi, {
+							...common,
+							mode: 'streamflow',
+							bucketIndex: bucket.marketingBucketIndex,
+							recipient: wallets.marketing,
+							timeline: {
+								vestingStart: timeline.marketingVestingStart,
+								vestingEnd: timeline.marketingVestingEnd,
+							},
+						}),
+				liquidity(umi, {
+					...common,
+					unlockedBucket: {
+						bucketIndex: bucket.liquidityManagementUnlockedBucketIndex,
+						recipient: wallets.liquidity,
+					},
+					timeline: {
+						claimStart: timeline.claimStart,
+						claimEnd: timeline.claimEnd,
+					},
+				}),
+				noStreamflow
+					? treasury(umi, {
+							...common,
+							mode: 'unlocked',
+							bucketIndex: bucket.treasuryBucketIndex,
+							recipient: wallets.treasury,
+							timeline: {
+								claimStart: timeline.claimStart,
+								claimEnd: timeline.claimEnd,
+							},
+						})
+					: treasury(umi, {
+							...common,
+							mode: 'streamflow',
+							bucketIndex: bucket.treasuryBucketIndex,
+							recipient: wallets.treasury,
+							timeline: {
+								vestingStart: timeline.treasuryVestingStart,
+								vestingEnd: timeline.treasuryVestingEnd,
+							},
+						}),
+				finalize(umi, {
+					...common,
+					buckets: [
+						bucket.privateSaleUnlockedBucket,
+						bucket.publicSaleUnlockedBucket,
+						bucket.publicSaleLaunchPoolBucket,
+						bucket.raydiumCpmmBucket,
+						bucket.bankrollUnlockedBucket,
+						bucket.marketingBucket,
+						bucket.liquidityManagementUnlockedBucket,
+						bucket.treasuryBucket,
+					],
+				}),
+			],
+		});
 		pipeline.startStep = startStep;
 		printPipeline(pipeline);
 

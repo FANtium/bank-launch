@@ -2,6 +2,7 @@ import { Command, Option } from '@commander-js/extra-typings';
 import { findGenesisAccountV2Pda } from '@metaplex-foundation/genesis';
 import { keypairIdentity } from '@metaplex-foundation/umi';
 import transitionPublicSale from '@/commands/transition/steps/01_transitionPublicSale';
+import graduateRaydiumCpmm from '@/commands/transition/steps/02_graduateRaydiumCpmm';
 import getBuckets from '@/constants/buckets';
 import globalLogger from '@/lib/logging/globalLogger';
 import createSignerFromSeed from '@/lib/metaplex/createSignerFromSeed';
@@ -54,18 +55,19 @@ const transitionCommand = new Command('transition')
 			},
 		};
 
-		const bucket = getBuckets(umi, genesisAccount, { noStreamflow });
+		const buckets = getBuckets(umi, genesisAccount, { noStreamflow });
 
 		const pipeline = buildPipeline({
 			name: 'transition',
 			steps: [
 				transitionPublicSale(umi, {
 					...common,
-					buckets: {
-						publicSaleLaunchPoolBucket: bucket.publicSaleLaunchPoolBucket,
-						publicSaleUnlockedBucket: bucket.publicSaleUnlockedBucket,
-						raydiumCpmmBucket: bucket.raydiumCpmmBucket,
-					},
+					buckets,
+				}),
+				graduateRaydiumCpmm(umi, {
+					...common,
+					cluster,
+					buckets,
 				}),
 			],
 		});
