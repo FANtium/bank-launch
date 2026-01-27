@@ -44,9 +44,9 @@ export default function finalize(
 	const items = builder.getInstructions();
 	const instruction = items[0];
 	if (instruction) {
-		logger.info(`\nFinal instruction accounts (${instruction.keys.length}):`);
+		logger.info(`Final instruction accounts (${instruction.keys.length}):`);
 		for (const [i, key] of instruction.keys.entries()) {
-			logger.info(`  ${i}: ${key.pubkey} (signer: ${key.isSigner}, writable: ${key.isWritable})`);
+			logger.info(`${i}: ${key.pubkey} (signer: ${key.isSigner}, writable: ${key.isWritable})`);
 		}
 	}
 

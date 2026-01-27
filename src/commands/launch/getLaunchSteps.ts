@@ -7,10 +7,8 @@ import publicSale from '@/commands/launch/steps/03_publicSale';
 import raydiumCpmm from '@/commands/launch/steps/04_raydiumCpmm';
 import bankroll from '@/commands/launch/steps/05_bankroll';
 import marketing from '@/commands/launch/steps/06_marketing';
-import marketingUnlocked from '@/commands/launch/steps/06_marketingUnlocked';
 import liquidity from '@/commands/launch/steps/07_liquidity';
 import treasury from '@/commands/launch/steps/08_treasury';
-import treasuryUnlocked from '@/commands/launch/steps/08_treasuryUnlocked';
 import finalize from '@/commands/launch/steps/09_finalize';
 import getBuckets from '@/constants/buckets';
 import { walletsMap } from '@/constants/wallets';
@@ -113,12 +111,11 @@ export default function getLaunchSteps(
 			},
 		}),
 		noStreamflow
-			? marketingUnlocked(context, {
+			? marketing(context, {
 					...common,
-					unlockedBucket: {
-						bucketIndex: bucket.marketingBucketIndex,
-						recipient: wallets.marketing,
-					},
+					mode: 'unlocked',
+					bucketIndex: bucket.marketingBucketIndex,
+					recipient: wallets.marketing,
 					timeline: {
 						claimStart: timeline.claimStart,
 						claimEnd: timeline.claimEnd,
@@ -126,10 +123,9 @@ export default function getLaunchSteps(
 				})
 			: marketing(context, {
 					...common,
-					streamflowBucket: {
-						bucketIndex: bucket.marketingBucketIndex,
-						recipient: wallets.marketing,
-					},
+					mode: 'streamflow',
+					bucketIndex: bucket.marketingBucketIndex,
+					recipient: wallets.marketing,
 					timeline: {
 						vestingStart: timeline.marketingVestingStart,
 						vestingEnd: timeline.marketingVestingEnd,
@@ -147,12 +143,11 @@ export default function getLaunchSteps(
 			},
 		}),
 		noStreamflow
-			? treasuryUnlocked(context, {
+			? treasury(context, {
 					...common,
-					unlockedBucket: {
-						bucketIndex: bucket.treasuryBucketIndex,
-						recipient: wallets.treasury,
-					},
+					mode: 'unlocked',
+					bucketIndex: bucket.treasuryBucketIndex,
+					recipient: wallets.treasury,
 					timeline: {
 						claimStart: timeline.claimStart,
 						claimEnd: timeline.claimEnd,
@@ -160,10 +155,9 @@ export default function getLaunchSteps(
 				})
 			: treasury(context, {
 					...common,
-					streamflowBucket: {
-						bucketIndex: bucket.treasuryBucketIndex,
-						recipient: wallets.treasury,
-					},
+					mode: 'streamflow',
+					bucketIndex: bucket.treasuryBucketIndex,
+					recipient: wallets.treasury,
 					timeline: {
 						vestingStart: timeline.treasuryVestingStart,
 						vestingEnd: timeline.treasuryVestingEnd,
