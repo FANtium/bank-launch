@@ -10,6 +10,11 @@ jobs:
   test-deployment:
     name: Test Deployment
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - args: --cluster local
+          - args: --cluster local --no-streamflow
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -60,7 +65,7 @@ jobs:
           solana airdrop 10 "$DEPLOYER_PUBKEY"
 
       - name: Run deployment
-        run: ./bank launch --cluster local --send
+        run: ./bank launch ${{ matrix.args }} --send
 
       - name: Stop Surfpool
         if: always()
