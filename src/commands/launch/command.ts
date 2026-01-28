@@ -42,7 +42,7 @@ const launchCommand = new Command('launch')
 
 		// Umi setup
 		const umi = createUmi(cluster);
-		const keypair = await getKeypair('deployer');
+		const keypair = await getKeypair('user-deployer');
 		umi.use(keypairIdentity(keypair, true));
 		logger.info(`Using deployer: ${umi.identity.publicKey}`);
 

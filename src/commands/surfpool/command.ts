@@ -4,8 +4,7 @@ import globalLogger from '@/lib/logging/globalLogger';
 import surfpoolRpcCall from './surfpoolRpcCall';
 
 async function getAirdropPublicKeys(): Promise<string[]> {
-	const excluded = ['bank'];
-	const glob = new Glob(`secrets/!(${excluded.join('|')}).json`);
+	const glob = new Glob(`secrets/user*.json`);
 	const publicKeys: string[] = [];
 
 	for await (const path of glob.scan('.')) {

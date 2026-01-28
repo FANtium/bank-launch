@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Generate deployer keypair
+      - name: Generate keypairs
         run: ./bank init
 
       - name: Install Surfpool

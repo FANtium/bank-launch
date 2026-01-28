@@ -19,7 +19,7 @@ const SEED = 'bank-launch';
 
 async function main() {
 	const umi = createUmi('local');
-	const keypair = await getKeypair('deployer');
+	const keypair = await getKeypair('user-deployer');
 	umi.use(keypairIdentity(keypair, true));
 
 	const seed32 = createHash('sha256').update(SEED).digest();

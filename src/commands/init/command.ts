@@ -4,7 +4,7 @@ import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { defaultRpcURLs } from '@/constants/rpc';
 import globalLogger from '@/lib/logging/globalLogger';
 
-const keypairsNames = ['deployer', 'bank', 'user1', 'user2'];
+const keypairsNames = ['bank', 'user-deployer', 'user-1', 'user-2'];
 
 const initCommand = new Command('init')
 	.description('Initialize keypairs for deployment')
