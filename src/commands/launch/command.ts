@@ -206,8 +206,14 @@ const launchCommand = new Command('launch')
 				logger.info('Launch completed successfully.');
 			} catch (error) {
 				if (error instanceof PipelineError) {
+					logger.error(`Pipeline failed at step ${error.stepIndex}: ${error.message}`);
+
+					if (error.cause) {
+						logger.error(error.cause);
+					}
+
 					logger.info(`To resume from the failed step, run:`);
-					logger.info(`  bun run bank launch --start-step ${error.stepIndex} -s`);
+					logger.info(`  bun run bank launch --cluster ${cluster} --start-step ${error.stepIndex} --send`);
 				}
 				process.exit(1);
 			}
