@@ -1,6 +1,6 @@
 import { Command, Option } from '@commander-js/extra-typings';
 import { findGenesisAccountV2Pda } from '@metaplex-foundation/genesis';
-import { keypairIdentity } from '@metaplex-foundation/umi';
+import { createSignerFromKeypair, keypairIdentity } from '@metaplex-foundation/umi';
 import initialize from '@/commands/launch/steps/01_initialize';
 import privateSale from '@/commands/launch/steps/02_privateSale';
 import publicSale from '@/commands/launch/steps/03_publicSale';
@@ -14,7 +14,6 @@ import getBuckets from '@/constants/buckets';
 import { walletsMap } from '@/constants/wallets';
 import getTimeline from '@/lib/getTimeline';
 import globalLogger from '@/lib/logging/globalLogger';
-import createSignerFromSeed from '@/lib/metaplex/createSignerFromSeed';
 import createUmi from '@/lib/metaplex/createUmi';
 import buildPipeline from '@/lib/pipeline/buildPipeline';
 import executePipeline from '@/lib/pipeline/executePipeline';
@@ -30,13 +29,12 @@ const launchCommand = new Command('launch')
 			.default('devnet' as const),
 	)
 	.option('-s, --send', 'Send the transactions', false)
-	.option('--seed <seed>', 'Seed for mint derivation', 'bank-launch')
 	.option('--streamflow', 'Use Streamflow buckets', true)
 	.option('--no-streamflow', 'Use unlocked buckets instead of Streamflow buckets')
 	.option('--start-step <number>', 'Step to start from (0-indexed)', '0')
 	.action(async (options) => {
 		const logger = globalLogger.getSubLogger({ name: 'launch' });
-		const { cluster, send, seed, streamflow, startStep: startStepStr } = options;
+		const { cluster, send, streamflow, startStep: startStepStr } = options;
 		const noStreamflow = !streamflow;
 		const startStep = Number.parseInt(startStepStr, 10);
 
@@ -48,8 +46,7 @@ const launchCommand = new Command('launch')
 		umi.use(keypairIdentity(keypair, true));
 		logger.info(`Using deployer: ${umi.identity.publicKey}`);
 
-		// Hash the seed string to get exactly 32 bytes (SHA-256 output)
-		const baseMint = createSignerFromSeed(umi, seed);
+		const baseMint = createSignerFromKeypair(umi, await getKeypair('bank'));
 
 		// Genesis account
 		const [genesisAccount] = findGenesisAccountV2Pda(umi, {

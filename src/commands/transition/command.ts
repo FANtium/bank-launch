@@ -1,6 +1,6 @@
 import { Command, Option } from '@commander-js/extra-typings';
 import { findGenesisAccountV2Pda } from '@metaplex-foundation/genesis';
-import { keypairIdentity } from '@metaplex-foundation/umi';
+import { createSignerFromKeypair, keypairIdentity } from '@metaplex-foundation/umi';
 import transitionPublicSale from '@/commands/transition/steps/01_transitionPublicSale';
 import graduateRaydiumCpmm from '@/commands/transition/steps/02_graduateRaydiumCpmm';
 import lockMarketingStreamflow from '@/commands/transition/steps/03_lockMarketingStreamflow';
@@ -8,7 +8,6 @@ import lockTreasuryStreamflow from '@/commands/transition/steps/04_lockTreasuryS
 import getBuckets from '@/constants/buckets';
 import { walletsMap } from '@/constants/wallets';
 import globalLogger from '@/lib/logging/globalLogger';
-import createSignerFromSeed from '@/lib/metaplex/createSignerFromSeed';
 import createUmi from '@/lib/metaplex/createUmi';
 import buildPipeline from '@/lib/pipeline/buildPipeline';
 import executePipeline from '@/lib/pipeline/executePipeline';
@@ -30,7 +29,7 @@ const transitionCommand = new Command('transition')
 	.option('--start-step <number>', 'Step to start from (0-indexed)', '0')
 	.action(async (options) => {
 		const logger = globalLogger.getSubLogger({ name: 'transition' });
-		const { cluster, send, seed, streamflow, startStep: startStepStr } = options;
+		const { cluster, send, streamflow, startStep: startStepStr } = options;
 		const noStreamflow = !streamflow;
 		const startStep = Number.parseInt(startStepStr, 10);
 
@@ -43,7 +42,7 @@ const transitionCommand = new Command('transition')
 		logger.info(`Using deployer: ${umi.identity.publicKey}`);
 
 		// Hash the seed string to get exactly 32 bytes (SHA-256 output)
-		const baseMint = createSignerFromSeed(umi, seed);
+		const baseMint = createSignerFromKeypair(umi, await getKeypair('bank'));
 
 		// Genesis account
 		const [genesisAccount] = findGenesisAccountV2Pda(umi, {

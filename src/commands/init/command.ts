@@ -4,6 +4,8 @@ import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { defaultRpcURLs } from '@/constants/rpc';
 import globalLogger from '@/lib/logging/globalLogger';
 
+const keypairsNames = ['deployer', 'bank', 'user1', 'user2'];
+
 const initCommand = new Command('init')
 	.description('Initialize keypairs for deployment')
 	.option('-f, --force', 'Forcefully write new keypairs', false)
@@ -30,7 +32,7 @@ const initCommand = new Command('init')
 			logger.info('Wrote', outputFile);
 		}
 
-		const keypairs = ['deployer'].map((name) => resolve(outputDir, `${name}.json`));
+		const keypairs = keypairsNames.map((name) => resolve(outputDir, `${name}.json`));
 		const jobs = keypairs.map(generate);
 		await Promise.all(jobs);
 	});
