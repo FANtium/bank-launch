@@ -5,6 +5,7 @@ import initCommand from './src/commands/init/command';
 import launchCommand from './src/commands/launch/command';
 import surfpoolCommand from './src/commands/surfpool/command';
 import transitionCommand from './src/commands/transition/command';
+import withdrawCommand from './src/commands/withdraw/command';
 
 const program = new Command()
 	.name('bank')
@@ -15,6 +16,7 @@ const program = new Command()
 	.addCommand(launchCommand)
 	.addCommand(transitionCommand)
 	.addCommand(surfpoolCommand)
+	.addCommand(withdrawCommand)
 	.parse();
 
 export default program;
