@@ -7,6 +7,7 @@ import type { AddUnlockedBucketV2Params } from '@/lib/metaplex/types/AddUnlocked
 import type { StepResult } from '@/lib/pipeline/types';
 import type { CommonBucketParams } from '@/types/CommonBucketParams';
 import type { SetOptional } from '@/types/SetOptional';
+import padding from '@/utils/padding';
 import supplyShareBps from '@/utils/supplyShareBps';
 import timeAbsolute from '@/utils/timeAbsolute';
 
@@ -88,7 +89,7 @@ export default function publicSale(
 				endBehaviors: [
 					// 80% to unlocked bucket
 					behavior('SendQuoteTokenPercentage', {
-						padding: Array(4).fill(0),
+						padding: padding(4),
 						destinationBucket: buckets.publicSaleUnlockedBucket,
 						percentageBps: 8000, // 80%
 						processed: false,
@@ -96,7 +97,7 @@ export default function publicSale(
 
 					// 20% to Raydium CPMM bucket
 					behavior('SendQuoteTokenPercentage', {
-						padding: Array(4).fill(0),
+						padding: padding(4),
 						destinationBucket: buckets.raydiumCpmmBucket,
 						percentageBps: 2000, // 20%
 						processed: false,

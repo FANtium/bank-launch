@@ -3,7 +3,10 @@ import { findGenesisAccountV2Pda } from '@metaplex-foundation/genesis';
 import { keypairIdentity } from '@metaplex-foundation/umi';
 import transitionPublicSale from '@/commands/transition/steps/01_transitionPublicSale';
 import graduateRaydiumCpmm from '@/commands/transition/steps/02_graduateRaydiumCpmm';
+import lockMarketingStreamflow from '@/commands/transition/steps/03_lockMarketingStreamflow';
+import lockTreasuryStreamflow from '@/commands/transition/steps/04_lockTreasuryStreamflow';
 import getBuckets from '@/constants/buckets';
+import { walletsMap } from '@/constants/wallets';
 import globalLogger from '@/lib/logging/globalLogger';
 import createSignerFromSeed from '@/lib/metaplex/createSignerFromSeed';
 import createUmi from '@/lib/metaplex/createUmi';
@@ -56,20 +59,40 @@ const transitionCommand = new Command('transition')
 		};
 
 		const buckets = getBuckets(umi, genesisAccount, { noStreamflow });
+		const wallets = walletsMap[cluster];
+
+		const steps = [
+			transitionPublicSale(umi, {
+				...common,
+				buckets,
+			}),
+			graduateRaydiumCpmm(umi, {
+				...common,
+				cluster,
+				buckets,
+			}),
+		];
+
+		if (!noStreamflow) {
+			steps.push(
+				lockMarketingStreamflow(umi, {
+					...common,
+					cluster,
+					buckets: { marketingBucket: buckets.marketingBucket },
+					recipient: wallets.marketing,
+				}),
+				lockTreasuryStreamflow(umi, {
+					...common,
+					cluster,
+					buckets: { treasuryBucket: buckets.treasuryBucket },
+					recipient: wallets.treasury,
+				}),
+			);
+		}
 
 		const pipeline = buildPipeline({
 			name: 'transition',
-			steps: [
-				transitionPublicSale(umi, {
-					...common,
-					buckets,
-				}),
-				graduateRaydiumCpmm(umi, {
-					...common,
-					cluster,
-					buckets,
-				}),
-			],
+			steps,
 		});
 		pipeline.startStep = startStep;
 		printPipeline(pipeline);
