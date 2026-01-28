@@ -57,9 +57,7 @@ const launchCommand = new Command('launch')
 		const common = {
 			baseMint: baseMint.publicKey,
 			genesisAccount,
-			backendSigner: {
-				signer: umi.identity.publicKey,
-			},
+			backendSigner: null,
 		};
 
 		// Buckets
@@ -94,7 +92,6 @@ const launchCommand = new Command('launch')
 					launchpoolBucket: {
 						bucketIndex: bucket.publicSaleLaunchPoolBucketIndex,
 						penaltyWallet: wallets.treasury,
-						backendSigner: null, // Allow permissionless deposits/withdrawals
 					},
 					timeline: {
 						claimStart: timeline.claimStart,

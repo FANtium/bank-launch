@@ -52,9 +52,7 @@ const transitionCommand = new Command('transition')
 		const common = {
 			baseMint: baseMint.publicKey,
 			genesisAccount,
-			backendSigner: {
-				signer: umi.identity.publicKey,
-			},
+			backendSigner: null,
 		};
 
 		const buckets = getBuckets(umi, genesisAccount, { noStreamflow });
