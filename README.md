@@ -44,27 +44,37 @@ Options:
 
 ## Scripts
 
-| Script            | Command                   | Description                                                        |
-| ----------------- | ------------------------- | ------------------------------------------------------------------ |
-| `surfpool`        | `bun run surfpool`        | Start local Surfpool validator with devnet and airdrop to deployer |
-| `launch:local`    | `bun run launch:local`    | Launch token on local cluster                                      |
-| `lint`            | `bun run lint`            | Run Biome linter                                                   |
-| `lint:fix`        | `bun run lint:fix`        | Run Biome linter with auto-fix                                     |
-| `lint:fix:unsafe` | `bun run lint:fix:unsafe` | Run Biome linter with unsafe auto-fix                              |
-| `type-check`      | `bun run type-check`      | Run TypeScript type checking                                       |
+| Script            | Command                   | Description                           |
+| ----------------- | ------------------------- | ------------------------------------- |
+| `launch:local`    | `bun run launch:local`    | Launch token on local cluster         |
+| `lint`            | `bun run lint`            | Run Biome linter                      |
+| `lint:fix`        | `bun run lint:fix`        | Run Biome linter with auto-fix        |
+| `lint:fix:unsafe` | `bun run lint:fix:unsafe` | Run Biome linter with unsafe auto-fix |
+| `type-check`      | `bun run type-check`      | Run TypeScript type checking          |
+
+## Surfpool Commands
+
+Manage the local Surfpool validator:
+
+```bash
+./bank surfpool start          # Start validator with TUI (default)
+./bank surfpool start --no-tui # Start validator without TUI
+./bank surfpool reset          # Reset validator state
+./bank surfpool stop           # Stop validator
+```
 
 ## Local Development
 
 For local development, you need to start Surfpool first:
 
 ```bash
-bun run surfpool
+./bank surfpool start
 ```
 
-This starts a local Solana validator connected to devnet and airdrops SOL to the deployer wallet.
+This starts a local Solana validator connected to devnet and airdrops SOL to all keypairs in `./secrets/`.
 
 Then in another terminal, run the launch:
 
 ```bash
-bun run launch:local
+./bank launch --cluster local --send
 ```

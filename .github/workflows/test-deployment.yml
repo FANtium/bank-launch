@@ -36,11 +36,6 @@ jobs:
       - name: Generate deployer keypair
         run: ./bank init
 
-      - name: Install Solana CLI
-        run: |
-          curl -sSfL https://release.anza.xyz/stable/install | bash
-          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
-
       - name: Install Surfpool
         run: |
           curl -sL https://run.surfpool.run/ | bash
@@ -48,7 +43,7 @@ jobs:
 
       - name: Start Surfpool
         run: |
-          surfpool start -n devnet &
+          ./bank surfpool start --no-tui &
           for i in {1..30}; do
             if curl -s http://localhost:8899/health > /dev/null 2>&1; then
               echo "Surfpool is ready"
@@ -58,16 +53,9 @@ jobs:
             sleep 1
           done
 
-      - name: Airdrop SOL to deployer
-        run: |
-          DEPLOYER_PUBKEY=$(jq -r .publicKey secrets/deployer.json)
-          echo "Deployer public key: $DEPLOYER_PUBKEY"
-          solana config set --url http://localhost:8899
-          solana airdrop 10 "$DEPLOYER_PUBKEY"
-
       - name: Run deployment
         run: ./bank launch --cluster local ${{ matrix.args }} --send
 
       - name: Stop Surfpool
         if: always()
-        run: pkill surfpool || true
+        run: ./bank surfpool stop
