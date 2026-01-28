@@ -54,7 +54,8 @@ const surfpoolStopCommand = new Command('stop')
 	.description('Stop all running surfpool validator processes')
 	.action(async () => {
 		try {
-			await $`pkill -9 -f surfpool || true`;
+			// Use pattern that matches "surfpool start" but not "surfpool stop" to avoid self-termination
+			await $`pkill -9 -f "surfpool start" || true`;
 			globalLogger.info('Surfpool stopped');
 		} catch {
 			// pkill returns non-zero if no processes found, which is fine
