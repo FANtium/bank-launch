@@ -4,7 +4,8 @@ import globalLogger from '@/lib/logging/globalLogger';
 import surfpoolRpcCall from './surfpoolRpcCall';
 
 async function getAirdropPublicKeys(): Promise<string[]> {
-	const glob = new Glob('secrets/*.json');
+	const excluded = ['bank'];
+	const glob = new Glob(`secrets/!(${excluded.join('|')}).json`);
 	const publicKeys: string[] = [];
 
 	for await (const path of glob.scan('.')) {
@@ -34,6 +35,7 @@ const surfpoolStartCommand = new Command('start')
 			args.push('--airdrop', publicKey);
 		}
 
+		globalLogger.info('Starting surfpool with args:', args.join(' '));
 		await $`surfpool start ${args}`;
 	});
 
@@ -53,7 +55,7 @@ const surfpoolStopCommand = new Command('stop')
 	.description('Stop all running surfpool validator processes')
 	.action(async () => {
 		try {
-			await $`pkill -9 -f surfpool`;
+			await $`pkill -9 -f surfpool || true`;
 			globalLogger.info('Surfpool stopped');
 		} catch {
 			// pkill returns non-zero if no processes found, which is fine
