@@ -25,7 +25,8 @@ const transitionCommand = new Command('transition')
 	)
 	.option('-s, --send', 'Send the transactions', false)
 	.option('--seed <seed>', 'Seed for mint derivation', 'bank-launch')
-	.option('--no-streamflow', 'Use unlocked buckets instead of streamflow')
+	.option('--streamflow', 'Use Streamflow buckets', true)
+	.option('--no-streamflow', 'Use unlocked buckets instead of Streamflow buckets')
 	.option('--start-step <number>', 'Step to start from (0-indexed)', '0')
 	.action(async (options) => {
 		const logger = globalLogger.getSubLogger({ name: 'transition' });
