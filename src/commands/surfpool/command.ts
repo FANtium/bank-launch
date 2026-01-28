@@ -1,7 +1,10 @@
+import { mkdir, unlink } from 'node:fs/promises';
 import { Command, Option } from '@commander-js/extra-typings';
 import { $, Glob } from 'bun';
 import globalLogger from '@/lib/logging/globalLogger';
 import surfpoolRpcCall from './surfpoolRpcCall';
+
+const SURFPOOL_PID_FILE = '.surfpool/surfpool.pid';
 
 async function getAirdropPublicKeys(): Promise<string[]> {
 	const glob = new Glob(`secrets/user*.json`);
@@ -35,7 +38,20 @@ const surfpoolStartCommand = new Command('start')
 		}
 
 		globalLogger.info('Starting surfpool with args:', args.join(' '));
-		await $`surfpool start ${args}`;
+
+		if (!options.tui) {
+			// Background mode: spawn process and write PID file
+			const proc = Bun.spawn(['surfpool', 'start', ...args], {
+				stdout: 'inherit',
+				stderr: 'inherit',
+			});
+			await mkdir('.surfpool', { recursive: true });
+			await Bun.write(SURFPOOL_PID_FILE, String(proc.pid));
+			globalLogger.info(`Surfpool started in background with PID ${proc.pid}`);
+		} else {
+			// Interactive TUI mode: run in foreground
+			await $`surfpool start ${args}`;
+		}
 	});
 
 const surfpoolResetCommand = new Command('reset')
@@ -53,13 +69,20 @@ const surfpoolResetCommand = new Command('reset')
 const surfpoolStopCommand = new Command('stop')
 	.description('Stop all running surfpool validator processes')
 	.action(async () => {
-		try {
-			// Use pattern that matches "surfpool start" but not "surfpool stop" to avoid self-termination
-			await $`pkill -9 -f "surfpool start" || true`;
-			globalLogger.info('Surfpool stopped');
-		} catch {
-			// pkill returns non-zero if no processes found, which is fine
-			globalLogger.info('No surfpool processes found');
+		const pidFile = Bun.file(SURFPOOL_PID_FILE);
+		if (await pidFile.exists()) {
+			try {
+				const pid = parseInt(await pidFile.text(), 10);
+				process.kill(pid, 'SIGKILL');
+				globalLogger.info(`Surfpool process ${pid} stopped`);
+			} catch {
+				// Process might already be dead
+				globalLogger.info('Surfpool process not running');
+			} finally {
+				await unlink(SURFPOOL_PID_FILE);
+			}
+		} else {
+			globalLogger.info('No surfpool PID file found');
 		}
 	});
 
