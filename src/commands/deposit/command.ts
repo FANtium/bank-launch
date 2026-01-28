@@ -5,8 +5,15 @@ import {
 	findLaunchPoolDepositV2Pda,
 	safeFetchLaunchPoolDepositV2,
 } from '@metaplex-foundation/genesis';
+import {
+	createTokenIfMissing,
+	findAssociatedTokenPda,
+	syncNative,
+	transferSol,
+} from '@metaplex-foundation/mpl-toolbox';
 import { createSignerFromKeypair, keypairIdentity, sol } from '@metaplex-foundation/umi';
 import getBuckets from '@/constants/buckets';
+import { WSOL_MINT } from '@/constants/token';
 import globalLogger from '@/lib/logging/globalLogger';
 import createUmi from '@/lib/metaplex/createUmi';
 import getKeypair from '@/utils/getKeypair';
@@ -60,16 +67,38 @@ const depositCommand = new Command('deposit')
 		const amountLamports = sol(amountSOL).basisPoints;
 		logger.info(`Deposit amount: ${amountLamports} lamports`);
 
-		// Build and send deposit transaction
-		const tx = depositLaunchPoolV2(umi, {
-			genesisAccount,
-			bucket: bucket.publicSaleLaunchPoolBucket,
-			baseMint: baseMint.publicKey,
-			depositor,
-			recipient: depositor,
-			padding: padding(7),
-			amountQuoteToken: amountLamports,
+		// Find the depositor's WSOL ATA
+		const [depositorWsolAta] = findAssociatedTokenPda(umi, {
+			mint: WSOL_MINT,
+			owner: depositor.publicKey,
 		});
+		logger.info(`Depositor WSOL ATA: ${depositorWsolAta}`);
+
+		// Build transaction: create WSOL ATA if missing, transfer SOL, sync native, then deposit
+		const tx = createTokenIfMissing(umi, {
+			mint: WSOL_MINT,
+			owner: depositor.publicKey,
+			token: depositorWsolAta,
+		})
+			.add(
+				transferSol(umi, {
+					source: depositor,
+					destination: depositorWsolAta,
+					amount: sol(amountSOL),
+				}),
+			)
+			.add(syncNative(umi, { account: depositorWsolAta }))
+			.add(
+				depositLaunchPoolV2(umi, {
+					genesisAccount,
+					bucket: bucket.publicSaleLaunchPoolBucket,
+					baseMint: baseMint.publicKey,
+					depositor,
+					recipient: depositor,
+					padding: padding(7),
+					amountQuoteToken: amountLamports,
+				}),
+			);
 
 		const result = await tx.sendAndConfirm(umi);
 		const signature = Buffer.from(result.signature).toString('base64');

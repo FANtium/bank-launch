@@ -78,3 +78,9 @@ Then in another terminal, run the launch:
 ```bash
 ./bank launch --cluster local --send
 ```
+
+You can now run the deposit commands with
+
+```bash
+./bank deposit --cluster local user-1 1.5 # user-1 keypair deposits 1.5 SOL
+```
