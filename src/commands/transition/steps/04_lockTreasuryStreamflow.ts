@@ -75,7 +75,7 @@ export default function lockTreasuryStreamflow(context: Umi, options: LockTreasu
 			bucketQuoteTokenAccount,
 			recipient,
 			authorityTokenAccount,
-			metadata,
+			metadata: metadata.publicKey,
 			escrowTokens,
 			recipientTokens,
 			streamflowTreasury: STREAMFLOW_TREASURY,

@@ -91,7 +91,6 @@ const launchCommand = new Command('launch')
 					},
 					launchpoolBucket: {
 						bucketIndex: bucket.publicSaleLaunchPoolBucketIndex,
-						penaltyWallet: wallets.treasury,
 					},
 					timeline: {
 						claimStart: timeline.claimStart,

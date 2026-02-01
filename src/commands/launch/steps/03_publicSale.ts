@@ -12,8 +12,7 @@ import supplyShareBps from '@/utils/supplyShareBps';
 import timeAbsolute from '@/utils/timeAbsolute';
 
 type PublicSaleOptions = CommonBucketParams & {
-	launchpoolBucket: Omit<SetOptional<AddLaunchPoolBucketV2Params, 'bucketIndex'>, 'penaltyWallet'> &
-		Required<Pick<AddLaunchPoolBucketV2Params, 'penaltyWallet'>>;
+	launchpoolBucket: SetOptional<AddLaunchPoolBucketV2Params, 'bucketIndex'>;
 	unlockedBucket: SetOptional<AddUnlockedBucketV2Params, 'bucketIndex' | 'recipient'>;
 
 	buckets: {

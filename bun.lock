@@ -6,7 +6,7 @@
       "name": "bank-launch",
       "dependencies": {
         "@commander-js/extra-typings": "14.0.0",
-        "@metaplex-foundation/genesis": "0.16.1",
+        "@metaplex-foundation/genesis": "0.17.0",
         "@metaplex-foundation/mpl-token-metadata": "3.4.0",
         "@metaplex-foundation/mpl-toolbox": "0.10.0",
         "@metaplex-foundation/umi": "1.4.1",
@@ -57,7 +57,7 @@
 
     "@emnapi/wasi-threads": ["@emnapi/wasi-threads@1.1.0", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-WI0DdZ8xFSbgMjR1sFsKABJ/C5OnRrjT06JXbZKexJGrDuPTzZdDYfFlsgcCXCyf+suG5QU2e/y1Wo2V/OapLQ=="],
 
-    "@metaplex-foundation/genesis": ["@metaplex-foundation/genesis@0.16.1", "", { "dependencies": { "@metaplex-foundation/mpl-token-metadata": "^3.4.0", "@metaplex-foundation/mpl-toolbox": "^0.10.0", "@noble/hashes": "^1.7.1" }, "peerDependencies": { "@metaplex-foundation/umi": "^1.4.1" } }, "sha512-JKI4IRowWj9TUzZzVVoTn52mpvwhk1+JEhWSczqA1wUQF3k5Nfo6xKfbz+pjbINH2niz2sySseNKNNns3lqwfA=="],
+    "@metaplex-foundation/genesis": ["@metaplex-foundation/genesis@0.17.0", "", { "dependencies": { "@metaplex-foundation/mpl-token-metadata": "^3.4.0", "@metaplex-foundation/mpl-toolbox": "^0.10.0", "@noble/hashes": "^1.7.1" }, "peerDependencies": { "@metaplex-foundation/umi": "^1.4.1" } }, "sha512-a9ynmscdgVS1kBf1EJoNSktfmNa4KBqMcIewL91KU339LJzGq34rtX15tVq1cw+NlSjz2iIJhaXubNJ5LbSgTQ=="],
 
     "@metaplex-foundation/mpl-token-metadata": ["@metaplex-foundation/mpl-token-metadata@3.4.0", "", { "dependencies": { "@metaplex-foundation/mpl-toolbox": "^0.10.0" }, "peerDependencies": { "@metaplex-foundation/umi": ">= 0.8.2 <= 1" } }, "sha512-AxBAYCK73JWxY3g9//z/C9krkR0t1orXZDknUPS4+GjwGH2vgPfsk04yfZ31Htka2AdS9YE/3wH7sMUBHKn9Rg=="],
 

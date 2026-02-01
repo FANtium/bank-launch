@@ -15,7 +15,7 @@
 	},
 	"dependencies": {
 		"@commander-js/extra-typings": "14.0.0",
-		"@metaplex-foundation/genesis": "0.16.1",
+		"@metaplex-foundation/genesis": "0.17.0",
 		"@metaplex-foundation/mpl-token-metadata": "3.4.0",
 		"@metaplex-foundation/mpl-toolbox": "0.10.0",
 		"@metaplex-foundation/umi": "1.4.1",

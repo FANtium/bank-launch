@@ -75,7 +75,7 @@ export default function lockMarketingStreamflow(context: Umi, options: LockMarke
 			bucketQuoteTokenAccount,
 			recipient,
 			authorityTokenAccount,
-			metadata,
+			metadata: metadata.publicKey,
 			escrowTokens,
 			recipientTokens,
 			streamflowTreasury: STREAMFLOW_TREASURY,
