@@ -21,6 +21,20 @@ async function getAirdropPublicKeys(): Promise<string[]> {
 	return publicKeys;
 }
 
+async function doAirdrop(): Promise<void> {
+	// Placeholder function to illustrate airdrop logic if needed in the future
+	const publicKeys = await getAirdropPublicKeys();
+
+	for (const publicKey of publicKeys) {
+		try {
+			const result = await surfpoolRpcCall('requestAirdrop', [publicKey, 10_000_000_000]);
+			globalLogger.info(`Airdropped 10 SOL to ${publicKey}:`, result);
+		} catch (error) {
+			globalLogger.error(`Failed to airdrop to ${publicKey}:`, error);
+		}
+	}
+}
+
 const surfpoolStartCommand = new Command('start')
 	.description('Start the surfpool local validator connected to devnet')
 	.addOption(new Option('--tui', 'Enable terminal UI mode (default)').default(true).conflicts('noTui'))
@@ -62,6 +76,14 @@ const surfpoolResetCommand = new Command('reset')
 			globalLogger.info('Surfpool reset successful:', result);
 		} catch (error) {
 			globalLogger.error('Failed to reset surfpool:', error);
+			process.exit(1);
+		}
+
+		try {
+			await doAirdrop();
+			globalLogger.info('Airdrops completed successfully');
+		} catch (error) {
+			globalLogger.error('Airdrop process failed:', error);
 			process.exit(1);
 		}
 	});
