@@ -23,13 +23,10 @@ const transitionCommand = new Command('transition')
 			.default('local' as const),
 	)
 	.option('-s, --send', 'Send the transactions', false)
-	.option('--streamflow', 'Use Streamflow buckets', false)
-	.option('--no-streamflow', 'Use unlocked buckets instead of Streamflow buckets')
 	.option('--start-step <number>', 'Step to start from (0-indexed)', '0')
 	.action(async (options) => {
 		const logger = globalLogger.getSubLogger({ name: 'transition' });
-		const { cluster, send, streamflow, startStep: startStepStr } = options;
-		const noStreamflow = !streamflow;
+		const { cluster, send, startStep: startStepStr } = options;
 		const startStep = Number.parseInt(startStepStr, 10);
 
 		logger.info(`Transitioning buckets on cluster: ${cluster}`);
@@ -55,23 +52,21 @@ const transitionCommand = new Command('transition')
 			backendSigner: null,
 		};
 
-		const buckets = getBuckets(umi, genesisAccount, { noStreamflow });
+		const buckets = getBuckets(umi, genesisAccount);
 		const wallets = walletsMap[cluster];
 
-		const steps = [
-			transitionPublicSale(umi, {
-				...common,
-				buckets,
-			}),
-			graduateRaydiumCpmm(umi, {
-				...common,
-				cluster,
-				buckets,
-			}),
-		];
-
-		if (!noStreamflow) {
-			steps.push(
+		const pipeline = buildPipeline({
+			name: 'transition',
+			steps: [
+				transitionPublicSale(umi, {
+					...common,
+					buckets,
+				}),
+				graduateRaydiumCpmm(umi, {
+					...common,
+					cluster,
+					buckets,
+				}),
 				lockMarketingStreamflow(umi, {
 					...common,
 					cluster,
@@ -84,12 +79,7 @@ const transitionCommand = new Command('transition')
 					buckets: { treasuryBucket: buckets.treasuryBucket },
 					recipient: wallets.treasury,
 				}),
-			);
-		}
-
-		const pipeline = buildPipeline({
-			name: 'transition',
-			steps,
+			],
 		});
 		pipeline.startStep = startStep;
 		printPipeline(pipeline);

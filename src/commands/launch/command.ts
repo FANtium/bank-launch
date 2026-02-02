@@ -29,13 +29,10 @@ const launchCommand = new Command('launch')
 			.default('local' as const),
 	)
 	.option('-s, --send', 'Send the transactions', false)
-	.option('--streamflow', 'Use Streamflow buckets', false)
-	.option('--no-streamflow', 'Use unlocked buckets instead of Streamflow buckets')
 	.option('--start-step <number>', 'Step to start from (0-indexed)', '0')
 	.action(async (options) => {
 		const logger = globalLogger.getSubLogger({ name: 'launch' });
-		const { cluster, send, streamflow, startStep: startStepStr } = options;
-		const noStreamflow = !streamflow;
+		const { cluster, send, startStep: startStepStr } = options;
 		const startStep = Number.parseInt(startStepStr, 10);
 
 		logger.info(`Launching on cluster: ${cluster} (send: ${send})`);
@@ -61,13 +58,10 @@ const launchCommand = new Command('launch')
 		};
 
 		// Buckets
-		const bucket = getBuckets(umi, genesisAccount, { noStreamflow });
+		const bucket = getBuckets(umi, genesisAccount);
 		const timeline = getTimeline(new Date());
 		const wallets = walletsMap[cluster];
 
-		// NOTE: StreamflowBucketV2 is not currently supported by the Genesis program's
-		// finalizeV2 instruction on devnet. This causes finalize to fail with "Invalid Bucket passed in".
-		// See: https://github.com/metaplex-foundation/genesis - report this issue to Metaplex.
 		const pipeline = buildPipeline({
 			name: 'launch',
 			steps: [
@@ -123,27 +117,15 @@ const launchCommand = new Command('launch')
 						claimEnd: timeline.claimEnd,
 					},
 				}),
-				noStreamflow
-					? marketing(umi, {
-							...common,
-							mode: 'unlocked',
-							bucketIndex: bucket.marketingBucketIndex,
-							recipient: wallets.marketing,
-							timeline: {
-								claimStart: timeline.claimStart,
-								claimEnd: timeline.claimEnd,
-							},
-						})
-					: marketing(umi, {
-							...common,
-							mode: 'streamflow',
-							bucketIndex: bucket.marketingBucketIndex,
-							recipient: wallets.marketing,
-							timeline: {
-								vestingStart: timeline.marketingVestingStart,
-								vestingEnd: timeline.marketingVestingEnd,
-							},
-						}),
+				marketing(umi, {
+					...common,
+					bucketIndex: bucket.marketingBucketIndex,
+					recipient: wallets.marketing,
+					timeline: {
+						vestingStart: timeline.marketingVestingStart,
+						vestingEnd: timeline.marketingVestingEnd,
+					},
+				}),
 				liquidity(umi, {
 					...common,
 					unlockedBucket: {
@@ -155,27 +137,15 @@ const launchCommand = new Command('launch')
 						claimEnd: timeline.claimEnd,
 					},
 				}),
-				noStreamflow
-					? treasury(umi, {
-							...common,
-							mode: 'unlocked',
-							bucketIndex: bucket.treasuryBucketIndex,
-							recipient: wallets.treasury,
-							timeline: {
-								claimStart: timeline.claimStart,
-								claimEnd: timeline.claimEnd,
-							},
-						})
-					: treasury(umi, {
-							...common,
-							mode: 'streamflow',
-							bucketIndex: bucket.treasuryBucketIndex,
-							recipient: wallets.treasury,
-							timeline: {
-								vestingStart: timeline.treasuryVestingStart,
-								vestingEnd: timeline.treasuryVestingEnd,
-							},
-						}),
+				treasury(umi, {
+					...common,
+					bucketIndex: bucket.treasuryBucketIndex,
+					recipient: wallets.treasury,
+					timeline: {
+						vestingStart: timeline.treasuryVestingStart,
+						vestingEnd: timeline.treasuryVestingEnd,
+					},
+				}),
 				finalize(umi, {
 					...common,
 					buckets: [

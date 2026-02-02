@@ -10,12 +10,6 @@ jobs:
   test-deployment:
     name: Test Deployment
     runs-on: ubuntu-slim
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - args: --streamflow
-          - args: --no-streamflow
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -54,7 +48,7 @@ jobs:
           done
 
       - name: Run deployment
-        run: ./bank launch --cluster local ${{ matrix.args }} --send
+        run: ./bank launch --cluster local --send
 
       - name: Stop Surfpool
         if: always()

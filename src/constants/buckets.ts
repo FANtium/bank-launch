@@ -9,22 +9,8 @@ import BucketCounter from '../lib/metaplex/BucketCounter';
 
 type BucketType = 'unlocked' | 'launchPool' | 'raydiumCpmm' | 'streamflow';
 
-type GetBucketsOptions = {
-	noStreamflow?: boolean;
-};
-
-export default function getBuckets(
-	context: Pick<Context, 'eddsa' | 'programs'>,
-	genesisAccount: PublicKey,
-	options: GetBucketsOptions = {},
-) {
-	const { noStreamflow = false } = options;
+export default function getBuckets(context: Pick<Context, 'eddsa' | 'programs'>, genesisAccount: PublicKey) {
 	const bucketCounter = new BucketCounter<BucketType>(['unlocked', 'launchPool', 'raydiumCpmm', 'streamflow']);
-
-	if (noStreamflow) {
-		// Alias 'streamflow' to 'unlocked' when noStreamflow is enabled
-		bucketCounter.addAlias('streamflow', 'unlocked');
-	}
 
 	// Private Sale
 	const privateSaleUnlockedBucketIndex = bucketCounter.get('unlocked');
@@ -63,15 +49,10 @@ export default function getBuckets(
 
 	// Marketing and collaborations
 	const marketingBucketIndex = bucketCounter.get('streamflow');
-	const [marketingBucket] = noStreamflow
-		? findUnlockedBucketV2Pda(context, {
-				genesisAccount,
-				bucketIndex: marketingBucketIndex,
-			})
-		: findStreamflowBucketV2Pda(context, {
-				genesisAccount,
-				bucketIndex: marketingBucketIndex,
-			});
+	const [marketingBucket] = findStreamflowBucketV2Pda(context, {
+		genesisAccount,
+		bucketIndex: marketingBucketIndex,
+	});
 
 	// Liquidity Management
 	const liquidityManagementUnlockedBucketIndex = bucketCounter.get('unlocked');
@@ -82,15 +63,10 @@ export default function getBuckets(
 
 	// Treasury: 20%
 	const treasuryBucketIndex = bucketCounter.get('streamflow');
-	const [treasuryBucket] = noStreamflow
-		? findUnlockedBucketV2Pda(context, {
-				genesisAccount,
-				bucketIndex: treasuryBucketIndex,
-			})
-		: findStreamflowBucketV2Pda(context, {
-				genesisAccount,
-				bucketIndex: treasuryBucketIndex,
-			});
+	const [treasuryBucket] = findStreamflowBucketV2Pda(context, {
+		genesisAccount,
+		bucketIndex: treasuryBucketIndex,
+	});
 
 	return {
 		privateSaleUnlockedBucketIndex,
@@ -115,7 +91,5 @@ export default function getBuckets(
 
 		treasuryBucketIndex,
 		treasuryBucket,
-
-		noStreamflow,
 	};
 }
