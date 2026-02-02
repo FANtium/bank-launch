@@ -10,6 +10,8 @@ import marketing from '@/commands/launch/steps/06_marketing';
 import liquidity from '@/commands/launch/steps/07_liquidity';
 import treasury from '@/commands/launch/steps/08_treasury';
 import finalize from '@/commands/launch/steps/09_finalize';
+import lockMarketingStreamflow from '@/commands/launch/steps/10_lockMarketingStreamflow';
+import lockTreasuryStreamflow from '@/commands/launch/steps/11_lockTreasuryStreamflow';
 import getBuckets from '@/constants/buckets';
 import { walletsMap } from '@/constants/wallets';
 import getTimeline from '@/lib/getTimeline';
@@ -158,6 +160,18 @@ const launchCommand = new Command('launch')
 						bucket.liquidityManagementUnlockedBucket,
 						bucket.treasuryBucket,
 					],
+				}),
+				lockMarketingStreamflow(umi, {
+					...common,
+					cluster,
+					buckets: { marketingBucket: bucket.marketingBucket },
+					recipient: wallets.marketing,
+				}),
+				lockTreasuryStreamflow(umi, {
+					...common,
+					cluster,
+					buckets: { treasuryBucket: bucket.treasuryBucket },
+					recipient: wallets.treasury,
 				}),
 			],
 		});

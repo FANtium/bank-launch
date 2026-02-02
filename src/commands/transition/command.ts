@@ -3,10 +3,7 @@ import { findGenesisAccountV2Pda } from '@metaplex-foundation/genesis';
 import { createSignerFromKeypair, keypairIdentity } from '@metaplex-foundation/umi';
 import transitionPublicSale from '@/commands/transition/steps/01_transitionPublicSale';
 import graduateRaydiumCpmm from '@/commands/transition/steps/02_graduateRaydiumCpmm';
-import lockMarketingStreamflow from '@/commands/transition/steps/03_lockMarketingStreamflow';
-import lockTreasuryStreamflow from '@/commands/transition/steps/04_lockTreasuryStreamflow';
 import getBuckets from '@/constants/buckets';
-import { walletsMap } from '@/constants/wallets';
 import globalLogger from '@/lib/logging/globalLogger';
 import createUmi from '@/lib/metaplex/createUmi';
 import buildPipeline from '@/lib/pipeline/buildPipeline';
@@ -53,7 +50,6 @@ const transitionCommand = new Command('transition')
 		};
 
 		const buckets = getBuckets(umi, genesisAccount);
-		const wallets = walletsMap[cluster];
 
 		const pipeline = buildPipeline({
 			name: 'transition',
@@ -66,18 +62,6 @@ const transitionCommand = new Command('transition')
 					...common,
 					cluster,
 					buckets,
-				}),
-				lockMarketingStreamflow(umi, {
-					...common,
-					cluster,
-					buckets: { marketingBucket: buckets.marketingBucket },
-					recipient: wallets.marketing,
-				}),
-				lockTreasuryStreamflow(umi, {
-					...common,
-					cluster,
-					buckets: { treasuryBucket: buckets.treasuryBucket },
-					recipient: wallets.treasury,
 				}),
 			],
 		});
