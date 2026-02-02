@@ -50,7 +50,10 @@
 					"level": "error",
 					"options": {
 						"paths": {
-							"date-fns": "Use deep imports like 'date-fns/format' instead",
+							"date-fns": {
+								"message": "Use deep imports like 'date-fns/format' instead",
+								"allowImportNames": ["Duration"]
+							},
 							"lodash-es": "Use deep imports like 'lodash-es/debounce' instead",
 							"next/legacy/image": "Use next/image instead"
 						}

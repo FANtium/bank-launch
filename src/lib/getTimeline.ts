@@ -1,23 +1,23 @@
-import { addHours } from 'date-fns/addHours';
-import { addMonths } from 'date-fns/addMonths';
+import { add } from 'date-fns/add';
 import { addSeconds } from 'date-fns/addSeconds';
 import {
-	CLAIM_DURATION_HOURS,
-	MARKETING_VESTING_MONTHS,
-	SALE_DURATION_HOURS,
-	TREASURY_VESTING_MONTHS,
+	CLAIM_DURATION,
+	MARKETING_VESTING_DURATION,
+	SALE_DURATION,
+	TREASURY_VESTING_DURATION,
 } from '@/constants/timeline';
+import parseDuration from '@/lib/parseDuration';
 
 export default function getTimeline(publicSaleStart: Date) {
-	const publicSaleEnd = addHours(publicSaleStart, SALE_DURATION_HOURS);
+	const publicSaleEnd = add(publicSaleStart, parseDuration(SALE_DURATION));
 	const claimStart = addSeconds(publicSaleEnd, 1); // claimStart > publicSaleEnd
-	const claimEnd = addHours(claimStart, CLAIM_DURATION_HOURS);
+	const claimEnd = add(claimStart, parseDuration(CLAIM_DURATION));
 
 	const treasuryVestingStart = claimStart;
-	const treasuryVestingEnd = addMonths(treasuryVestingStart, TREASURY_VESTING_MONTHS);
+	const treasuryVestingEnd = add(treasuryVestingStart, parseDuration(TREASURY_VESTING_DURATION));
 
 	const marketingVestingStart = claimStart;
-	const marketingVestingEnd = addMonths(marketingVestingStart, MARKETING_VESTING_MONTHS);
+	const marketingVestingEnd = add(marketingVestingStart, parseDuration(MARKETING_VESTING_DURATION));
 
 	return {
 		publicSaleStart,
