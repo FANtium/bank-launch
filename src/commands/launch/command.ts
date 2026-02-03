@@ -1,6 +1,6 @@
 import { Command, Option } from '@commander-js/extra-typings';
 import { findGenesisAccountV2Pda } from '@metaplex-foundation/genesis';
-import { createSignerFromKeypair, keypairIdentity } from '@metaplex-foundation/umi';
+import { createSignerFromKeypair, generateSigner, type KeypairSigner, keypairIdentity } from '@metaplex-foundation/umi';
 import initialize from '@/commands/launch/steps/01_initialize';
 import privateSale from '@/commands/launch/steps/02_privateSale';
 import publicSale from '@/commands/launch/steps/03_publicSale';
@@ -24,6 +24,7 @@ import PipelineError from '@/lib/pipeline/PipelineError';
 import printPipeline from '@/lib/pipeline/printPipeline';
 import syncToken from '@/lib/syncToken';
 import getKeypair from '@/utils/getKeypair';
+import writeKeypair from '@/utils/writeKeypair';
 
 const launchCommand = new Command('launch')
 	.description('Launch BANK token on Solana')
@@ -34,9 +35,11 @@ const launchCommand = new Command('launch')
 	)
 	.option('-s, --send', 'Send the transactions', false)
 	.option('--start-step <number>', 'Step to start from (0-indexed)', '0')
+	.option('--new-mint', 'Generate a new mint keypair instead of using the stored one', false)
+	.option('--mint <address>', 'Use a stored mint keypair from ./secrets/mints/<address>.json')
 	.action(async (options) => {
 		const logger = globalLogger.getSubLogger({ name: 'launch' });
-		const { cluster, send, startStep: startStepStr } = options;
+		const { cluster, send, startStep: startStepStr, newMint, mint } = options;
 		const startStep = Number.parseInt(startStepStr, 10);
 
 		logger.info(`Launching on cluster: ${cluster} (send: ${send})`);
@@ -47,7 +50,20 @@ const launchCommand = new Command('launch')
 		umi.use(keypairIdentity(keypair, true));
 		logger.info(`Using deployer: ${umi.identity.publicKey}`);
 
-		const baseMint = createSignerFromKeypair(umi, await getKeypair('bank'));
+		// Determine base mint: --mint > --new-mint > default bank keypair
+		let baseMint: KeypairSigner;
+
+		if (mint) {
+			baseMint = createSignerFromKeypair(umi, await getKeypair(mint, './secrets/mints'));
+			logger.info(`Using mint: ${baseMint.publicKey} (from stored keypair)`);
+		} else if (newMint) {
+			baseMint = generateSigner(umi);
+			await writeKeypair(`./secrets/mints/${baseMint.publicKey}.json`, baseMint);
+			logger.info(`Using mint: ${baseMint.publicKey} (newly generated, saved to ./secrets/mints/)`);
+		} else {
+			baseMint = createSignerFromKeypair(umi, await getKeypair('bank'));
+			logger.info(`Using mint: ${baseMint.publicKey}`);
+		}
 
 		// Genesis account
 		const [genesisAccount] = findGenesisAccountV2Pda(umi, {
@@ -198,7 +214,8 @@ const launchCommand = new Command('launch')
 					}
 
 					logger.info(`To resume from the failed step, run:`);
-					logger.info(`  bun run bank launch --cluster ${cluster} --start-step ${error.stepIndex} --send`);
+					const mintArg = mint ? ` --mint ${mint}` : newMint ? ` --mint ${baseMint.publicKey}` : '';
+					logger.info(`  bun run bank launch --cluster ${cluster} --start-step ${error.stepIndex}${mintArg} --send`);
 				}
 				process.exit(1);
 			}

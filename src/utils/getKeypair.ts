@@ -1,7 +1,7 @@
 import type { Keypair } from '@metaplex-foundation/umi';
 
-export default async function getKeypair(name: string) {
-	const path = `./secrets/${name}.json`;
+export default async function getKeypair(name: string, basePath = './secrets') {
+	const path = `${basePath}/${name}.json`;
 	const file = Bun.file(path);
 
 	if (!(await file.exists())) {

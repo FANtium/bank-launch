@@ -22,6 +22,7 @@
 		"@metaplex-foundation/umi-bundle-defaults": "1.4.1",
 		"@types/node": "24.10.9",
 		"date-fns": "4.1.0",
+		"p-retry": "7.1.1",
 		"tslog": "4.10.2",
 		"zod": "4.3.6"
 	},
