@@ -1,4 +1,5 @@
 import {
+	DEVNET_FEE_ORACLE_ADDRESS,
 	DEVNET_STREAMFLOW_PROGRAM_ID,
 	FEE_ORACLE_ADDRESS,
 	findStreamflowMetadataPda,
@@ -10,7 +11,6 @@ import {
 import { findAssociatedTokenPda, setComputeUnitLimit } from '@metaplex-foundation/mpl-toolbox';
 import { type PublicKey, publicKey, type Umi } from '@metaplex-foundation/umi';
 import { publicKey as publicKeySerializer, string } from '@metaplex-foundation/umi/serializers';
-import { DEVNET_FEE_ORACLE_ADDRESS } from '@/constants/streamflow';
 import { WSOL_MINT } from '@/constants/token';
 import type { StepResult } from '@/lib/pipeline/types';
 import type Cluster from '@/types/Cluster';
