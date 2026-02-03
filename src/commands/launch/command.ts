@@ -22,6 +22,7 @@ import buildPipeline from '@/lib/pipeline/buildPipeline';
 import executePipeline from '@/lib/pipeline/executePipeline';
 import PipelineError from '@/lib/pipeline/PipelineError';
 import printPipeline from '@/lib/pipeline/printPipeline';
+import syncToken from '@/lib/syncToken';
 import getKeypair from '@/utils/getKeypair';
 
 const launchCommand = new Command('launch')
@@ -72,7 +73,7 @@ const launchCommand = new Command('launch')
 		const pipeline = buildPipeline({
 			name: 'launch',
 			steps: [
-				initialize(umi, { ...common, baseMint }),
+				initialize(umi, { ...common, baseMint, cluster }),
 				privateSale(umi, {
 					...common,
 					unlockedBucket: {
@@ -202,6 +203,8 @@ const launchCommand = new Command('launch')
 				process.exit(1);
 			}
 		}
+
+		await syncToken(cluster, baseMint.publicKey);
 	});
 
 export default launchCommand;

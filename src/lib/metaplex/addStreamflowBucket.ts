@@ -4,20 +4,20 @@ import type { Context } from '@metaplex-foundation/umi';
 type AddStreamflowBucketV2Params = Parameters<typeof addStreamflowBucketV2>[1];
 type StreamflowConfigArgs = AddStreamflowBucketV2Params['config'];
 
-const day = 60 * 60 * 24; // 1 day in seconds
-const period = day; // 1 day
+const hour = 60 * 60; // 1 hour in seconds
+const periodInSeconds = hour; // 1 hour
 
 // Default config for Streamflow buckets
 // See https://github.com/streamflow-finance/js-sdk/blob/master/packages/stream/README.md for details
 const defaultConfig = {
-	period,
+	period: periodInSeconds,
 	cancelableByRecipient: false,
 	cancelableBySender: false,
 	canTopup: false,
 	canUpdateRate: false,
 	transferableBySender: false,
 	automaticWithdrawal: true,
-	withdrawFrequency: 60 * 60 * 24, // 1 day
+	withdrawFrequency: hour, // 1 hour
 	transferableByRecipient: true,
 	pausable: false,
 } satisfies Partial<StreamflowConfigArgs>;
@@ -32,6 +32,17 @@ type AddStreamflowBucketParams = Omit<AddStreamflowBucketV2Params, 'config'> & {
 		};
 };
 
+/**
+ * Creates a Streamflow vesting bucket with automatic period/amount calculations.
+ *
+ * The function calculates:
+ * - Number of vesting periods based on the duration and period length (1 hour)
+ * - Amount to distribute per period (locked tokens / number of periods)
+ * - Any remainder from rounding is added to the cliff (initial unlock)
+ *
+ * @param context - Umi context with eddsa, payer, and programs
+ * @param params - Bucket parameters including config with startDate/endDate
+ */
 export default function addStreamflowBucket(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
 	{ config, ...params }: AddStreamflowBucketParams,
@@ -40,20 +51,38 @@ export default function addStreamflowBucket(
 		throw new Error('baseTokenAllocation cannot be undefined');
 	}
 
-	const totalVestingTime = BigInt(config.endDate) - BigInt(config.startDate);
-	const periods = totalVestingTime / BigInt(period);
-	const amountPerPeriod = BigInt(params.baseTokenAllocation) / periods;
+	// cliff = amount unlocked immediately at startDate
+	const cliffAmount = BigInt(config.cliffAmount ?? 0);
 
-	// startTime is the number of seconds from now
-	const startTime = Math.max(Math.floor(Date.now() / 1000) - Number(config.startDate), 0);
+	// lockedAmount = tokens that will vest over time (total - cliff)
+	const lockedAmount = BigInt(params.baseTokenAllocation) - cliffAmount;
+
+	// Calculate vesting duration and number of periods
+	// Each period is 1 hour (3600 seconds)
+	const vestingDurationInSeconds = BigInt(config.endDate) - BigInt(config.startDate);
+	const numberOfPeriods = vestingDurationInSeconds / BigInt(periodInSeconds);
+
+	// BigInt division truncates, so we need to handle the remainder
+	// to ensure all tokens are distributed
+	const amountPerPeriod = lockedAmount / numberOfPeriods;
+	const distributedViaVesting = amountPerPeriod * numberOfPeriods;
+	const roundingRemainder = lockedAmount - distributedViaVesting;
+
+	// Add rounding remainder to cliff so no tokens are left undistributed
+	const adjustedCliff = cliffAmount + roundingRemainder;
+
+	// startTime = seconds until vesting begins (0 if startDate is in the past)
+	const nowInSeconds = Math.floor(Date.now() / 1000);
+	const startTime = Math.max(Number(config.startDate) - nowInSeconds, 0);
 
 	return addStreamflowBucketV2(context, {
 		...params,
 		config: {
 			...defaultConfig,
-			cliff: config.cliff ?? 0n,
-			amountPerPeriod,
 			...config,
+			cliff: startTime,
+			cliffAmount: adjustedCliff,
+			amountPerPeriod,
 			startTime,
 		},
 	});
