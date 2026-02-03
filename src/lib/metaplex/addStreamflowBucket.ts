@@ -23,33 +23,38 @@ const defaultConfig = {
 } satisfies Partial<StreamflowConfigArgs>;
 type StreamflowConfigDefaultKeys = keyof typeof defaultConfig;
 
-type AddStreamflowBucketVXParams = Omit<AddStreamflowBucketV2Params, 'config'> & {
-	config: Omit<StreamflowConfigArgs, StreamflowConfigDefaultKeys | 'cliff' | 'amountPerPeriod'> &
+type AddStreamflowBucketParams = Omit<AddStreamflowBucketV2Params, 'config'> & {
+	config: Omit<StreamflowConfigArgs, StreamflowConfigDefaultKeys | 'cliff' | 'amountPerPeriod' | 'startTime'> &
 		Partial<Pick<StreamflowConfigArgs, StreamflowConfigDefaultKeys>> & {
 			cliff?: number | bigint;
-			endTime: number | bigint;
+			startDate: number | bigint;
+			endDate: number | bigint;
 		};
 };
 
-export default function addStreamflowBucketVX(
+export default function addStreamflowBucket(
 	context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
-	{ config, ...params }: AddStreamflowBucketVXParams,
+	{ config, ...params }: AddStreamflowBucketParams,
 ) {
 	if (typeof params.baseTokenAllocation === 'undefined') {
 		throw new Error('baseTokenAllocation cannot be undefined');
 	}
 
-	const totalVestingTime = BigInt(config.endTime) - BigInt(config.startTime);
+	const totalVestingTime = BigInt(config.endDate) - BigInt(config.startDate);
 	const periods = totalVestingTime / BigInt(period);
 	const amountPerPeriod = BigInt(params.baseTokenAllocation) / periods;
+
+	// startTime is the number of seconds from now
+	const startTime = Math.max(Math.floor(Date.now() / 1000) - Number(config.startDate), 0);
 
 	return addStreamflowBucketV2(context, {
 		...params,
 		config: {
 			...defaultConfig,
-			cliff: config.cliff ?? config.startTime,
+			cliff: config.cliff ?? 0n,
 			amountPerPeriod,
 			...config,
+			startTime,
 		},
 	});
 }

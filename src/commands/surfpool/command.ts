@@ -1,7 +1,11 @@
 import { mkdir, unlink } from 'node:fs/promises';
 import { Command, Option } from '@commander-js/extra-typings';
+import { findGenesisAccountV2Pda } from '@metaplex-foundation/genesis';
 import { $, Glob } from 'bun';
+import getBuckets from '@/constants/buckets';
 import globalLogger from '@/lib/logging/globalLogger';
+import createUmi from '@/lib/metaplex/createUmi';
+import getKeypair from '@/utils/getKeypair';
 import surfpoolRpcCall from './surfpoolRpcCall';
 
 const SURFPOOL_PID_FILE = '.surfpool/surfpool.pid';
@@ -18,7 +22,16 @@ async function getAirdropPublicKeys(): Promise<string[]> {
 		}
 	}
 
-	return publicKeys;
+	const umi = createUmi('local');
+	const baseMint = await getKeypair('bank');
+	const [genesisAccount] = findGenesisAccountV2Pda(umi, {
+		baseMint: baseMint.publicKey,
+		genesisIndex: 0,
+	});
+
+	const buckets = getBuckets(umi, genesisAccount);
+
+	return [...publicKeys, buckets.marketingBucket, buckets.treasuryBucket];
 }
 
 async function doAirdrop(): Promise<void> {

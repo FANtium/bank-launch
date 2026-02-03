@@ -1,7 +1,6 @@
 import type { Context, PublicKey } from '@metaplex-foundation/umi';
 import { getUnixTime } from 'date-fns/getUnixTime';
-import addStreamflowBucketVX from '@/lib/metaplex/addStreamflowBucketVX';
-import type { AddStreamflowBucketV2Params } from '@/lib/metaplex/types/AddStreamflowBucketV2Params';
+import addStreamflowBucket from '@/lib/metaplex/addStreamflowBucket';
 import type { StepResult } from '@/lib/pipeline/types';
 import type { CommonBucketParams } from '@/types/CommonBucketParams';
 import supplyShareBps from '@/utils/supplyShareBps';
@@ -10,7 +9,6 @@ import timeAbsolute from '@/utils/timeAbsolute';
 type TreasuryOptions = CommonBucketParams & {
 	bucketIndex: number;
 	recipient: PublicKey;
-	streamflowConfig?: AddStreamflowBucketV2Params['config'];
 	timeline: {
 		vestingStart: Date;
 		vestingEnd: Date;
@@ -26,14 +24,13 @@ export default function treasury(
 	const {
 		bucketIndex,
 		recipient,
-		streamflowConfig,
 		timeline: { vestingStart, vestingEnd },
 		...common
 	} = options;
 
 	return {
 		description: 'Add treasury Streamflow bucket',
-		builder: addStreamflowBucketVX(context, {
+		builder: addStreamflowBucket(context, {
 			...common,
 			bucketIndex,
 			recipient,
@@ -41,9 +38,8 @@ export default function treasury(
 			config: {
 				streamName: Buffer.from('Treasury Streamflow'),
 				cliffAmount: supplyShareBps(TREASURY_BPS * 0.25), // 5% of the total supply (25% cliff)
-				startTime: getUnixTime(vestingStart),
-				endTime: getUnixTime(vestingEnd),
-				...streamflowConfig,
+				startDate: getUnixTime(vestingStart),
+				endDate: getUnixTime(vestingEnd),
 			},
 			lockStartCondition: timeAbsolute(vestingStart),
 			lockEndCondition: timeAbsolute(vestingEnd),

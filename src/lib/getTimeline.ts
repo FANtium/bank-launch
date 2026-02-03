@@ -13,10 +13,10 @@ export default function getTimeline(publicSaleStart: Date) {
 	const claimStart = addSeconds(publicSaleEnd, 1); // claimStart > publicSaleEnd
 	const claimEnd = add(claimStart, parseDuration(CLAIM_DURATION));
 
-	const treasuryVestingStart = claimStart;
+	const treasuryVestingStart = publicSaleStart;
 	const treasuryVestingEnd = add(treasuryVestingStart, parseDuration(TREASURY_VESTING_DURATION));
 
-	const marketingVestingStart = claimStart;
+	const marketingVestingStart = publicSaleStart;
 	const marketingVestingEnd = add(marketingVestingStart, parseDuration(MARKETING_VESTING_DURATION));
 
 	return {

@@ -10,8 +10,9 @@ import marketing from '@/commands/launch/steps/06_marketing';
 import liquidity from '@/commands/launch/steps/07_liquidity';
 import treasury from '@/commands/launch/steps/08_treasury';
 import finalize from '@/commands/launch/steps/09_finalize';
-import lockMarketingStreamflow from '@/commands/launch/steps/10_lockMarketingStreamflow';
-import lockTreasuryStreamflow from '@/commands/launch/steps/11_lockTreasuryStreamflow';
+import fundStreamflowBuckets from '@/commands/launch/steps/10_fundStreamflowBuckets';
+import lockMarketingStreamflow from '@/commands/launch/steps/11_lockMarketingStreamflow';
+import lockTreasuryStreamflow from '@/commands/launch/steps/12_lockTreasuryStreamflow';
 import getBuckets from '@/constants/buckets';
 import { walletsMap } from '@/constants/wallets';
 import getTimeline from '@/lib/getTimeline';
@@ -61,7 +62,11 @@ const launchCommand = new Command('launch')
 
 		// Buckets
 		const bucket = getBuckets(umi, genesisAccount);
-		const timeline = getTimeline(new Date());
+		// On local cluster, set publicSaleStart slightly in the past so the lock
+		// period has already started when the Streamflow lock steps execute.
+		const now = new Date();
+		const publicSaleStart = now;
+		const timeline = getTimeline(publicSaleStart);
 		const wallets = walletsMap[cluster];
 
 		const pipeline = buildPipeline({
@@ -161,6 +166,7 @@ const launchCommand = new Command('launch')
 						bucket.treasuryBucket,
 					],
 				}),
+				fundStreamflowBuckets(umi, { baseMint: baseMint.publicKey }),
 				lockMarketingStreamflow(umi, {
 					...common,
 					cluster,
